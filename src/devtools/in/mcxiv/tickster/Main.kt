@@ -1,4 +1,4 @@
-package `in`.mcxiv.project_template
+package `in`.mcxiv.tickster
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
@@ -24,7 +24,7 @@ import com.composeunstyled.theme.Theme
 fun main() = application {
     Window(
         onCloseRequest = ::exitApplication,
-        title = "project-template",
+        title = "tickster",
     ) {
         App()
     }

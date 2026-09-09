@@ -1,4 +1,4 @@
-rootProject.name = "project-template"
+rootProject.name = "tickster"
 
 pluginManagement {
     repositories {

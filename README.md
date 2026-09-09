@@ -56,7 +56,7 @@ rename_project my-project
 
 Replace `my-project` with the name you chose for your repository.
 
-This replaces the template's `project-template` and `project_template` names throughout the project and renames the corresponding directories.
+This replaces the template's `tickster` and `tickster` names throughout the project and renames the corresponding directories.
 
 ### 4. Verify the project
 

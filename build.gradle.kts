@@ -30,11 +30,11 @@ dependencies {
 
 compose.desktop {
     application {
-        mainClass = "in.mcxiv.project_template.MainKt"
+        mainClass = "in.mcxiv.tickster.MainKt"
 
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-            packageName = "in.mcxiv.project_template"
+            packageName = "in.mcxiv.tickster"
             packageVersion = "1.0.0"
         }
     }
