@@ -1,0 +1,26 @@
+[project]
+name = "project-template"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "cryptography>=50.0.1",
+    "dotenv>=0.9.9",
+]
+
+[build-system]
+requires = ["uv_build<=0.12"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-root = "src/business"
+
+[tool.pytest.ini_options]
+testpaths = ["tests/business"]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+    "xonsh[full]>=0.24.2",
+]

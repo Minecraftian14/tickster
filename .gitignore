@@ -1,0 +1,42 @@
+# Generated Directories
+build/
+dist/
+dist-ssr/
+gen/
+logs/
+out/
+target/
+.DS_Store
+
+# Python, UV files
+__pycache__/
+*.py[codz]
+*$py.class
+wheels/
+*.egg-info
+.venv/
+/uv.lock
+
+# Kotlin, Gradle files
+.kotlin/
+hs_err_pid*
+replay_pid*
+.gradle/
+!gradle/wrapper/gradle-wrapper.jar
+
+# TypeScript, Node, NPM, Vite files
+*.tsbuildinfo
+*.log
+/node_modules/
+*.local
+npm-debug.log*
+
+# Obsidian
+/.obsidian/workspace.json
+/docs/vault/
+
+# Environment files
+/.env
+/.env.*.bkp
+*_secret*.*
+*_secret/
