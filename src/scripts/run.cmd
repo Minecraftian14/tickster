@@ -20,6 +20,8 @@ set "prog_args="
     if "%~1"=="dt"       set "source=devtools" & set "flag=" & goto :continue
     if "%~1"=="business" set "source=business" & set "flag=" & goto :continue
     if "%~1"=="bl"       set "source=business" & set "flag=" & goto :continue
+    if "%~1"=="upstox"   set "source=upstox"   & set "flag=" & goto :continue
+    if "%~1"=="us"       set "source=upstox"   & set "flag=" & goto :continue
     echo Unknown source name "%~1" & exit /b
     :skip_source
 
@@ -44,6 +46,7 @@ if "%source%"=="" echo Please specify the source name to run & exit /b
 if "%source%"=="frontend" goto :run_frontend
 if "%source%"=="devtools" goto :run_devtools
 if "%source%"=="business" goto :run_business
+if "%source%"=="upstox"   goto :run_upstox
 
 :run_frontend
 rem if not "%prog_args%"=="" set "prog_args=--%prog_args%"
@@ -57,6 +60,10 @@ exit /b
 
 :run_business
 %call% uv run %tool_args% -m tickster %prog_args%
+exit /b
+
+:run_upstox
+%call% uv run %tool_args% -m upstox_connector %prog_args%
 exit /b
 
 :help_message
