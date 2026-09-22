@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from ngrok_service import connect_tunnel
-from upstox_connector.api_version_mechanism import (
+from tickster.api_version_mechanism import (
     VersionRouter,
     discover_api_versions,
     get_latest_version,

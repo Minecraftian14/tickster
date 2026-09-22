@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from upstox_connector.models import HelloResponse
+from tickster.models import HelloResponse
 
 
 router = APIRouter()

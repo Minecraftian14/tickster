@@ -1,0 +1,1 @@
+from .openrouter_provider import OPENROUTER_CONFIG

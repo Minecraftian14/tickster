@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, Request
 
-from upstox_connector.models import HelloResponse
-from upstox_connector.versioning import add_api_version
+from tickster.models import HelloResponse
+from tickster.versioning import add_api_version
 
 
 router = APIRouter()

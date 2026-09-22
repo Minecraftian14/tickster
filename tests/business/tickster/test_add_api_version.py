@@ -1,6 +1,6 @@
 from fastapi.testclient import TestClient
 
-from upstox_connector.__main__ import app
+from tickster.__main__ import app
 
 client = TestClient(app)
 

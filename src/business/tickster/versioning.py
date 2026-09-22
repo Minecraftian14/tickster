@@ -21,7 +21,7 @@ class VersionRouter:
 def discover_api_versions():
     api_versions = []
 
-    from upstox_connector import api
+    from tickster import api
     for module in pkgutil.iter_modules(api.__path__):
         name = module.name
 
