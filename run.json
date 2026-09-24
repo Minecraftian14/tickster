@@ -1,0 +1,24 @@
+{
+  "atom": {
+    "frontend":  {
+      "alias": "fe",
+      "command": "npm run dev {tool_args} -- --clearScreen false {prog_args}"
+    },
+    "devtools": {
+      "alias":  "dt",
+      "command":  "gradlew run {tool_args} {prog_args}"
+    },
+    "business":  {
+      "alias":  "bl",
+      "command":  "uv run {tool_args} -m tickster {prog_args}"
+    },
+    "upstox": {
+      "alias":  "us",
+      "command":  "uv run {tool_args} -m upstox_connector {prog_args}"
+    },
+    "nodezator": {
+      "alias":  "nz",
+      "command":  "nodezator"
+    }
+  }
+}

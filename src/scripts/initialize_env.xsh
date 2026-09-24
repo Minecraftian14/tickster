@@ -1,11 +1,10 @@
-@# 2>nul & xonsh %~f0 %~dp0 %* & exit /b %errorlevel%
-
 import base64
 import datetime, os, sys
 import csv, json, math, re
 import collections, itertools, functools
 
 from dotenv import dotenv_values, set_key
+
 
 args = sys.argv[1:]
 

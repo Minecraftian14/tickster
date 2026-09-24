@@ -303,7 +303,7 @@ gtt_trades_llm = llm.with_structured_output(GTTTrades)
 
 def agent_3_generation(state: State):
     if 'data' not in state or not isinstance(state['data'], CompanySpecs):
-        raise ValueError("No company specs provided!")
+        raise ValueError("No company workflow provided!")
     result = gtt_trades_llm.invoke(clean(f'''
         You are a trading specialist.
         You will be given a series of chosen companies, each populated with a bunch of useful metrics.
