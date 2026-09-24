@@ -8,6 +8,7 @@ logs/
 out/
 target/
 .DS_Store
+*.ndz.*
 
 # Python, UV files
 __pycache__/

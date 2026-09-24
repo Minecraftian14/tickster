@@ -10,9 +10,12 @@ dependencies = [
     "dotenv>=0.9.9",
     "fastapi>=0.141.1",
     "httpx>=0.28.1",
+    "langchain-core",
     "langchain-openrouter>=0.2.9",
     "langgraph>=1.2.12",
     "langgraph-checkpoint-sqlite>=3.1.1",
+    "nodezator>=1.5.5",
+    "pydantic",
     "pydantic-settings>=2.15.0",
     "pyngrok>=8.1.2",
     "requests>=2.34.2",
@@ -33,6 +36,8 @@ testpaths = ["tests/business"]
 
 [dependency-groups]
 dev = [
+    "anyio>=4.14.2",
+    "langgraph-cli[inmem]>=0.4.31",
     "pytest>=9.1.1",
     "xonsh[full]>=0.24.2",
 ]
