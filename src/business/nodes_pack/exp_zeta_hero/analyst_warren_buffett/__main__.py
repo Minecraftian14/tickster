@@ -1,15 +1,33 @@
+import yfinance as yf
 from langchain_core.messages import SystemMessage, HumanMessage
 
+from nodes_pack.exp_zeta_hero import analyze_fundamentals, extract_ticker_data
+from nodes_pack.yfinance_nodes import to_dict
 from tickster.workflow.helpers import workflow_node
 from tickster.workflow.state import WorkflowState, history_item
 
 
-@workflow_node
-def warren_buffett(state: WorkflowState) -> WorkflowState:
-    assert "message" in state
-    assert "tickers" in state["message"]
-    tickers = state["message"]
-    response = state['llm'].invoke([
+def prepare_data(metric: dict):
+    fundamental_analysis = analyze_fundamentals(metric)
+
+    total_score = fundamental_analysis["score"]
+    max_possible_score = 10
+
+    return {
+        "ticker": metric['ticker'],
+        "fundamental_analysis": fundamental_analysis,
+        "market_cap": metric['market_cap'],
+        "max_score": max_possible_score,
+        "score": total_score,
+    }
+
+
+def data_to_markdown(ticker_data: dict) -> str:
+    return str(ticker_data)
+
+
+def call_llm(state: WorkflowState, ticker_document: str):
+    return state['llm'].invoke([
         SystemMessage(
             "You are Warren Buffett. Using only the supplied facts, choose bullish, bearish, or neutral.\n"
             "\n"
@@ -36,8 +54,13 @@ def warren_buffett(state: WorkflowState) -> WorkflowState:
             "Keep reasoning below 120 characters. Do not make up data. Return only JSON."
         ),
         HumanMessage(
+<<<<<<< HEAD
             f"{tickers}"
             "Return precisely:\n"
+=======
+            ticker_document,
+            "Return exactly:\n"
+>>>>>>> 3764cda ([CHKPT] exp_zeta_hero)
             "{{\n"
             '  "signal": "bullish" | "bearish" | "neutral",\n'
             '  "confidence": int,\n'
@@ -45,8 +68,26 @@ def warren_buffett(state: WorkflowState) -> WorkflowState:
             "}}"
         ),
     ])
+
+
+@workflow_node
+def warren_buffett(state: WorkflowState) -> WorkflowState:
+    assert "message" in state
+    assert "tickers" in state["message"]
+
+    tickers: yf.Tickers = state["message"]["tickers"]
+    raw_results = {}
+    results = {}
+    for ticker_name in tickers.symbols:
+        ticker = tickers.tickers[ticker_name]
+        ticker_data = extract_ticker_data(to_dict(ticker))
+        analysis_data = prepare_data(ticker_data)
+        ticker_document = data_to_markdown(analysis_data)
+        raw_results[ticker_name] = call_llm(state, ticker_document)
+        results[ticker_name] = raw_results[ticker_name].content
+
     return {
-        'history': [history_item('warren_buffett', response.content, output_raw=response)]
+        'history': [history_item('warren_buffett', results, output_raw=raw_results)]
     }
 
 

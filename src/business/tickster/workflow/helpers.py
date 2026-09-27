@@ -29,7 +29,9 @@ def cache_aware(function: WorkflowNode) -> WorkflowNode:
                 return workflow_cache[cache_key]
             state = function(state)
             workflow_cache[cache_key] = state
-        return state
+            return state
+        else:
+            return function(state)
 
     return wrapper
 

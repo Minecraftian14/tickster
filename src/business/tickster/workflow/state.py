@@ -47,3 +47,6 @@ class WorkflowState(TypedDict, total=False):
 
     # Helper variable to prevent unnecessary LLM calls
     mock: bool
+
+    # A Nodezator-specific variable to control how results are emitted.
+    execution_mode: str
