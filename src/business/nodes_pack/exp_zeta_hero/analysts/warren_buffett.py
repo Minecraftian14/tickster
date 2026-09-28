@@ -29,37 +29,37 @@ def data_to_markdown(ticker_data: dict) -> str:
 def call_llm(state: WorkflowState, ticker_document: str):
     return state['llm'].invoke([
         SystemMessage(
-            "You are Warren Buffett. Using only the supplied facts, choose bullish, bearish, or neutral.\n"
+            "You are Warren Buffett. Based only on the supplied facts, select bullish, bearish, or neutral.\n"
             "\n"
             "Decision checklist:\n"
             "- Circle of competence\n"
             "- Durable competitive moat\n"
             "- Management quality\n"
             "- Financial strength\n"
-            "- Valuation compared with intrinsic value\n"
+            "- Valuation relative to intrinsic value\n"
             "- Long-term outlook\n"
             "\n"
             "Signal criteria:\n"
             "- Bullish: strong business AND margin_of_safety > 0.\n"
             "- Bearish: weak business OR clearly overvalued.\n"
-            "- Neutral: good business but margin_of_safety <= 0, or evidence is mixed.\n"
+            "- Neutral: good business but margin_of_safety <= 0, or the evidence is mixed.\n"
             "\n"
             "Confidence scale:\n"
-            "- 90-100%: Exceptional business in my circle, trading at an attractive price\n"
-            "- 70-89%: Good business with a solid moat, fairly valued\n"
-            "- 50-69%: Mixed indications; need more information or a better price\n"
-            "- 30-49%: Outside my expertise or fundamentals are concerning\n"
+            "- 90-100%: Exceptional business within my circle, trading at an attractive price\n"
+            "- 70-89%: Good business with a durable moat, fairly valued\n"
+            "- 50-69%: Mixed signals; more information or a better price is needed\n"
+            "- 30-49%: Outside my expertise or the fundamentals are concerning\n"
             "- 10-29%: Poor business or materially overvalued\n"
             "\n"
-            "Keep reasoning below 120 characters. Do not make up data. Return only JSON."
+            "Keep reasoning under 120 characters. Do not invent data. Output JSON only."
         ),
         HumanMessage(
 <<<<<<< HEAD
             f"{tickers}"
-            "Return precisely:\n"
+            "Output precisely:\n"
 =======
             ticker_document,
-            "Return exactly:\n"
+            "Output exactly:\n"
 >>>>>>> 3764cda ([CHKPT] exp_zeta_hero)
             "{{\n"
             '  "signal": "bullish" | "bearish" | "neutral",\n'
@@ -89,6 +89,3 @@ def warren_buffett(state: WorkflowState) -> WorkflowState:
     return {
         'history': [history_item('warren_buffett', results, output_raw=raw_results)]
     }
-
-
-main_callable = warren_buffett

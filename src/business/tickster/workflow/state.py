@@ -1,8 +1,12 @@
 import operator
+from collections.abc import Callable
 from datetime import datetime
 from typing import TypedDict, Any, Optional, Annotated, Required
 
 from langchain_core.language_models import BaseChatModel
+from langchain_openrouter import ChatOpenRouter
+
+from gai_providers import OPENROUTER_CONFIG
 
 
 class HistoryItem(TypedDict):
@@ -48,5 +52,21 @@ class WorkflowState(TypedDict, total=False):
     # Helper variable to prevent unnecessary LLM calls
     mock: bool
 
-    # A Nodezator-specific variable to control how results are emitted.
+    # Nodezator-specific variables to control how results are emitted.
     execution_mode: str
+    on_start_execution: Callable[[str], None]
+    on_finish_execution: Callable[[str], None]
+    state_name: str
+
+
+def create_state(model: str = 'openrouter/free', api_key: str = 'default', cache_key: Any = None, mock: bool = False) -> WorkflowState:
+    return {
+        'llm': ChatOpenRouter(
+            model=model,
+            temperature=0,
+            api_key=OPENROUTER_CONFIG[api_key],
+        ),
+        'history': [history_item('create_state', 'LLM Initialized')],
+        'cache_key': cache_key,
+        'mock': mock,
+    }

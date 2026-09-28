@@ -64,7 +64,19 @@ def state_stable(function: WorkflowNode) -> WorkflowNode:
     return wrapper
 
 
+def execution_state_aware(function: WorkflowNode) -> WorkflowNode:
+    @wraps(function)
+    def wrapper(state: WorkflowState):
+        if 'on_start_execution' in state: state['on_start_execution'](state.get('state_name', '<unknown>'))
+        final = function(state)
+        if 'on_finish_execution' in state: state['on_finish_execution'](state.get('state_name', '<unknown>'))
+        return final
+
+    return wrapper
+
+
 def workflow_node(function: WorkflowNode) -> WorkflowNode:
     function = state_stable(function)
     function = cache_aware(function)
+    function = execution_state_aware(function)
     return function
