@@ -1,7 +1,7 @@
 import yfinance as yf
 from langchain_core.messages import SystemMessage, HumanMessage
 
-from nodes_pack.exp_zeta_hero import analyze_fundamentals, extract_ticker_data
+from nodes_pack.exp_zeta_hero.utilities import analyze_fundamentals, extract_ticker_data
 from nodes_pack.yfinance_nodes import to_dict
 from tickster.workflow.helpers import workflow_node
 from tickster.workflow.state import WorkflowState, history_item
@@ -25,16 +25,16 @@ def data_to_markdown(ticker_data: dict) -> str:
 def call_llm(state: WorkflowState, ticker_document: str):
     return state["llm"].invoke([
         SystemMessage(
-            "You are an AI agent applying Cathie Wood's approach.\n"
-            "Focus on disruptive innovation, exponential growth potential, large TAM, multi-year horizons, and R&D-led scale.\n"
-            "Use optimistic, forward-looking, conviction-driven reasoning. Output JSON only."
+            "You are an AI agent applying Rakesh Jhunjhunwala's approach.\n"
+            "Principles: circle of competence, margin of safety, economic moat, quality management, financial strength, long-term horizon, and growth focus.\n"
+            "Provide thorough, evidence-based reasoning in Jhunjhunwala's style. Output JSON only."
         ),
         HumanMessage(
             ticker_document,
-            "Output JSON:\n"
+            "Output JSON exactly:\n"
             "{\n"
-            '  "signal": "bullish/bearish/neutral",\n'
-            '  "confidence": float (0-100),\n'
+            '  "signal": "bullish" | "bearish" | "neutral",\n'
+            '  "confidence": float between 0 and 100,\n'
             '  "reasoning": "string"\n'
             "}"
         ),
@@ -42,9 +42,9 @@ def call_llm(state: WorkflowState, ticker_document: str):
 
 
 @workflow_node
-def cathie_wood(state: WorkflowState) -> WorkflowState:
-    assert "message" in state and "tickers" in state["message"]
-    tickers: yf.Tickers = state["message"]["tickers"]
+def rakesh_jhunjhunwala(state: WorkflowState) -> WorkflowState:
+    assert "message" in state and "reference" in state
+    tickers: yf.Tickers = state["reference"]["output"]
 
     raw_results = {}
     results = {}
@@ -54,4 +54,4 @@ def cathie_wood(state: WorkflowState) -> WorkflowState:
         raw_results[ticker_name] = call_llm(state, data_to_markdown(analysis_data))
         results[ticker_name] = raw_results[ticker_name].content
 
-    return {"history": [history_item("cathie_wood", results, output_raw=raw_results)]}
+    return {"history": [history_item("rakesh_jhunjhunwala", results, output_raw=raw_results)]}

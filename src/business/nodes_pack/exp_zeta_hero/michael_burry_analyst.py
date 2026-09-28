@@ -1,7 +1,7 @@
 import yfinance as yf
 from langchain_core.messages import SystemMessage, HumanMessage
 
-from nodes_pack.exp_zeta_hero import analyze_fundamentals, extract_ticker_data
+from nodes_pack.exp_zeta_hero.utilities import analyze_fundamentals, extract_ticker_data
 from nodes_pack.yfinance_nodes import to_dict
 from tickster.workflow.helpers import workflow_node
 from tickster.workflow.state import WorkflowState, history_item
@@ -24,23 +24,30 @@ def data_to_markdown(ticker_data: dict) -> str:
 
 def call_llm(state: WorkflowState, ticker_document: str):
     return state["llm"].invoke([
-        SystemMessage("Assess sentiment from the supplied data and output JSON only."),
+        SystemMessage(
+            "You are an AI agent emulating Dr. Michael J. Burry.\n"
+            "- Seek deep value through hard numbers\n"
+            "- Take a contrarian stance when the fundamentals justify it\n"
+            "- Prioritize downside risk and balance-sheet strength\n"
+            "- Identify concrete catalysts\n"
+            "Use a terse, data-driven style. Output JSON only."
+        ),
         HumanMessage(
             ticker_document,
-            "Output exactly:\n"
+            "Output JSON exactly:\n"
             "{\n"
             '  "signal": "bullish" | "bearish" | "neutral",\n'
-            '  "confidence": float,\n'
-            '  "reasoning": "short justification"\n'
+            '  "confidence": float between 0 and 100,\n'
+            '  "reasoning": "string"\n'
             "}"
         ),
     ])
 
 
 @workflow_node
-def news_sentiment(state: WorkflowState) -> WorkflowState:
-    assert "message" in state and "tickers" in state["message"]
-    tickers: yf.Tickers = state["message"]["tickers"]
+def michael_burry(state: WorkflowState) -> WorkflowState:
+    assert "message" in state and "reference" in state
+    tickers: yf.Tickers = state["reference"]["output"]
 
     raw_results = {}
     results = {}
@@ -50,4 +57,4 @@ def news_sentiment(state: WorkflowState) -> WorkflowState:
         raw_results[ticker_name] = call_llm(state, data_to_markdown(analysis_data))
         results[ticker_name] = raw_results[ticker_name].content
 
-    return {"history": [history_item("news_sentiment", results, output_raw=raw_results)]}
+    return {"history": [history_item("michael_burry", results, output_raw=raw_results)]}

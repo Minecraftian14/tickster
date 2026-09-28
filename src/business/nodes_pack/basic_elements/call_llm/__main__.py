@@ -14,7 +14,7 @@ def call_llm_node(state: WorkflowState) -> WorkflowState:
 
 
 @execution_node
-def call_llm(graph: ExecutionGraph) -> ExecutionGraph:
+def call_llm(graph: ExecutionGraph = None) -> ExecutionGraph:
     graph.add_node(call_llm_node, auto_edge=True)
     return graph
 

@@ -1,7 +1,7 @@
 import yfinance as yf
 from langchain_core.messages import SystemMessage, HumanMessage
 
-from nodes_pack.exp_zeta_hero import analyze_fundamentals, extract_ticker_data
+from nodes_pack.exp_zeta_hero.utilities import analyze_fundamentals, extract_ticker_data
 from nodes_pack.yfinance_nodes import to_dict
 from tickster.workflow.helpers import workflow_node
 from tickster.workflow.state import WorkflowState, history_item
@@ -59,8 +59,8 @@ def call_llm(state: WorkflowState, ticker_document: str):
 
 @workflow_node
 def apex(state: WorkflowState) -> WorkflowState:
-    assert "message" in state and "tickers" in state["message"]
-    tickers: yf.Tickers = state["message"]["tickers"]
+    assert "message" in state and "reference" in state
+    tickers: yf.Tickers = state["reference"]["output"]
 
     raw_results = {}
     results = {}

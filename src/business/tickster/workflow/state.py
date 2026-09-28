@@ -46,6 +46,9 @@ class WorkflowState(TypedDict, total=False):
     # All tools or notes should add their entry here
     history: Required[Annotated[list[HistoryItem], operator.add]]
 
+    # One or more history items passed on as context for the next node
+    reference: HistoryItem
+
     # Helper variable to control how data is cached
     cache_key: Any
 

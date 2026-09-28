@@ -58,8 +58,7 @@ def state_stable(function: WorkflowNode) -> WorkflowNode:
     @wraps(function)
     def wrapper(initial: WorkflowState):
         final = function(initial)
-        # return merge_states(initial, final)
-        return final
+        return merge_states(initial, final)
 
     return wrapper
 
@@ -75,8 +74,20 @@ def execution_state_aware(function: WorkflowNode) -> WorkflowNode:
     return wrapper
 
 
+def state_reference_aware(function: WorkflowNode) -> WorkflowNode:
+    @wraps(function)
+    def wrapper(state: WorkflowState):
+        final = function(state)
+        if 'reference' not in state:
+            final['reference'] = final['history'][-1]
+        return final
+
+    return wrapper
+
+
 def workflow_node(function: WorkflowNode) -> WorkflowNode:
-    function = state_stable(function)
     function = cache_aware(function)
+    # function = state_stable(function)  # Disabled, since now the executing is owned by langgraph
+    function = state_reference_aware(function)
     function = execution_state_aware(function)
     return function

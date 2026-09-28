@@ -9,6 +9,7 @@ def auto_create_execution_graph(function):
     @wraps(function)
     def wrapper(graph: ExecutionGraph, *args, **kwargs):
         if graph is None: graph = ExecutionGraph()
+        else: graph = graph.model_copy()
         return function(graph, *args, **kwargs)
 
     return wrapper

@@ -6,9 +6,8 @@ from typing import Optional
 from langgraph.graph import StateGraph, START, END
 from pydantic import BaseModel, Field
 
+from tickster.workflow.helpers import WorkflowNode
 from tickster.workflow.state import WorkflowState
-
-WorkflowNode = Callable[[WorkflowState], WorkflowState]
 
 
 def issue_name(node):

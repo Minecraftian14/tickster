@@ -9,7 +9,7 @@ from .models import GraphState
 
 def start_execution(graph: ExecutionGraph, state: GraphState):
     def execute():
-        with open("temp/stdout.log", "w") as file_out:
+        with open("temp/stdout.log", "w", encoding='utf-8') as file_out:
             with redirect_stdout(file_out):
                 print(datetime.now(), flush=True)
                 workflow = graph.create_langgraph_workflow()

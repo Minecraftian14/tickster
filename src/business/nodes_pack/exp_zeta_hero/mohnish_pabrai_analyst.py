@@ -1,7 +1,7 @@
 import yfinance as yf
 from langchain_core.messages import SystemMessage, HumanMessage
 
-from nodes_pack.exp_zeta_hero import analyze_fundamentals, extract_ticker_data
+from nodes_pack.exp_zeta_hero.utilities import analyze_fundamentals, extract_ticker_data
 from nodes_pack.yfinance_nodes import to_dict
 from tickster.workflow.helpers import workflow_node
 from tickster.workflow.state import WorkflowState, history_item
@@ -25,25 +25,30 @@ def data_to_markdown(ticker_data: dict) -> str:
 def call_llm(state: WorkflowState, ticker_document: str):
     return state["llm"].invoke([
         SystemMessage(
-            "You are Charlie Munger. Using only the provided facts, choose bullish, bearish, or neutral. "
-            "Output JSON only and keep the reasoning below 120 characters."
+            "You are Mohnish Pabrai. Apply this value-investing philosophy:\n"
+            "- Heads I win; tails I lose little\n"
+            "- Simple, understandable businesses with moats\n"
+            "- High FCF yields and low leverage\n"
+            "- Rising intrinsic value combined with price dislocation\n"
+            "- Avoid complexity and fragility\n"
+            "Give checklist-driven reasoning. Output JSON only."
         ),
         HumanMessage(
             ticker_document,
-            "Output exactly:\n"
+            "Output EXACTLY:\n"
             "{\n"
             '  "signal": "bullish" | "bearish" | "neutral",\n'
-            '  "confidence": float,\n'
-            '  "reasoning": "short justification"\n'
+            '  "confidence": float (0-100),\n'
+            '  "reasoning": "string"\n'
             "}"
         ),
     ])
 
 
 @workflow_node
-def charlie_munger(state: WorkflowState) -> WorkflowState:
-    assert "message" in state and "tickers" in state["message"]
-    tickers: yf.Tickers = state["message"]["tickers"]
+def mohnish_pabrai(state: WorkflowState) -> WorkflowState:
+    assert "message" in state and "reference" in state
+    tickers: yf.Tickers = state["reference"]["output"]
 
     raw_results = {}
     results = {}
@@ -53,4 +58,4 @@ def charlie_munger(state: WorkflowState) -> WorkflowState:
         raw_results[ticker_name] = call_llm(state, data_to_markdown(analysis_data))
         results[ticker_name] = raw_results[ticker_name].content
 
-    return {"history": [history_item("charlie_munger", results, output_raw=raw_results)]}
+    return {"history": [history_item("mohnish_pabrai", results, output_raw=raw_results)]}

@@ -1,7 +1,7 @@
 import yfinance as yf
 from langchain_core.messages import SystemMessage, HumanMessage
 
-from nodes_pack.exp_zeta_hero import analyze_fundamentals, extract_ticker_data
+from nodes_pack.exp_zeta_hero.utilities import analyze_fundamentals, extract_ticker_data
 from nodes_pack.yfinance_nodes import to_dict
 from tickster.workflow.helpers import workflow_node
 from tickster.workflow.state import WorkflowState, history_item
@@ -25,15 +25,15 @@ def data_to_markdown(ticker_data: dict) -> str:
 def call_llm(state: WorkflowState, ticker_document: str):
     return state["llm"].invoke([
         SystemMessage(
-            "You are an AI agent applying Peter Lynch's approach.\n"
-            "Use Lynch principles: invest in what you know, GARP/PEG, ten-bagger potential, steady growth, low debt, and a strong company story.\n"
-            "Use practical, plainspoken reasoning and take a clear stance. Output JSON only."
+            "You are an AI agent applying Cathie Wood's approach.\n"
+            "Focus on disruptive innovation, exponential growth potential, large TAM, multi-year horizons, and R&D-led scale.\n"
+            "Use optimistic, forward-looking, conviction-driven reasoning. Output JSON only."
         ),
         HumanMessage(
             ticker_document,
-            "Return valid JSON using:\n"
+            "Output JSON:\n"
             "{\n"
-            '  "signal": "bullish" | "bearish" | "neutral",\n'
+            '  "signal": "bullish/bearish/neutral",\n'
             '  "confidence": float (0-100),\n'
             '  "reasoning": "string"\n'
             "}"
@@ -42,9 +42,9 @@ def call_llm(state: WorkflowState, ticker_document: str):
 
 
 @workflow_node
-def peter_lynch(state: WorkflowState) -> WorkflowState:
-    assert "message" in state and "tickers" in state["message"]
-    tickers: yf.Tickers = state["message"]["tickers"]
+def cathie_wood(state: WorkflowState) -> WorkflowState:
+    assert "message" in state and "reference" in state
+    tickers: yf.Tickers = state["reference"]["output"]
 
     raw_results = {}
     results = {}
@@ -54,4 +54,4 @@ def peter_lynch(state: WorkflowState) -> WorkflowState:
         raw_results[ticker_name] = call_llm(state, data_to_markdown(analysis_data))
         results[ticker_name] = raw_results[ticker_name].content
 
-    return {"history": [history_item("peter_lynch", results, output_raw=raw_results)]}
+    return {"history": [history_item("cathie_wood", results, output_raw=raw_results)]}
