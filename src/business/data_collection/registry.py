@@ -13,6 +13,12 @@ SOURCES = {
         "status": "candidate",
         "redundancy_group": "nse_access",
     },
+    "nse_indices": {
+        "type": "primary_exchange_http",
+        "domains": ["indices", "sector_classification", "index_history", "index_valuation"],
+        "status": "candidate",
+        "redundancy_group": "nse_access",
+    },
     "nse_public": {
         "type": "primary_exchange_http",
         "domains": ["shareholding", "insider_transactions", "market_events", "company_events", "indices"],
@@ -31,9 +37,21 @@ SOURCES = {
         "status": "candidate",
         "redundancy_group": "nse_access",
     },
+    "niftyterminal": {
+        "type": "open_source_wrapper",
+        "domains": ["instruments", "market", "fundamentals", "indices", "documents"],
+        "status": "candidate",
+        "redundancy_group": "nse_access",
+    },
     "NSEPython": {
         "type": "open_source_wrapper",
         "domains": ["market", "corporate_actions", "company_events", "indices"],
+        "status": "candidate",
+        "redundancy_group": "nse_access",
+    },
+    "nse_filings": {
+        "type": "primary_exchange_http",
+        "domains": ["filings", "documents", "fundamentals", "company_events", "governance", "shareholder_actions", "capital_raising", "regulatory_risk", "esg", "credit"],
         "status": "candidate",
         "redundancy_group": "nse_access",
     },
@@ -67,6 +85,24 @@ SOURCES = {
         "status": "candidate",
         "redundancy_group": "broker_data_api",
     },
+    "google_news_rss": {
+        "type": "rss_aggregator",
+        "domains": ["news"],
+        "status": "candidate",
+        "redundancy_group": "news_aggregators",
+    },
+    "economic_times_rss": {
+        "type": "publisher_rss",
+        "domains": ["news"],
+        "status": "candidate",
+        "redundancy_group": "publisher_rss",
+    },
+    "business_standard_rss": {
+        "type": "publisher_rss",
+        "domains": ["news"],
+        "status": "candidate",
+        "redundancy_group": "publisher_rss",
+    },
     "stoxim": {
         "type": "structured_fundamentals",
         "domains": ["fundamentals", "shareholding", "corporate_actions", "company_events"],
@@ -75,9 +111,16 @@ SOURCES = {
     },
     "sebi": {
         "type": "regulator",
-        "domains": ["filings", "company_events", "insider_transactions"],
+        "domains": ["regulatory", "filings", "company_events", "insider_transactions"],
+        "regulatory_capabilities": ["legal", "regulations", "circulars", "master_circulars", "orders", "informal_guidance", "press_releases", "news_listing"],
         "status": "candidate",
         "redundancy_group": "regulatory_docs",
+    },
+    "mospi": {
+        "type": "primary_macro",
+        "domains": ["macro", "cpi", "iip"],
+        "status": "candidate",
+        "redundancy_group": "macro",
     },
     "rbi": {
         "type": "primary_macro",

@@ -8,6 +8,7 @@
       <sourceFolder url="file://$MODULE_DIR$/src/frontend" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/langflow_dir" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/scripts" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/.venv" />
       <excludeFolder url="file://$MODULE_DIR$/src/Pipelit/.venv" />
       <excludeFolder url="file://$MODULE_DIR$/.gradle" />

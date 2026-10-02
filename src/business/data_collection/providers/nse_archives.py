@@ -50,6 +50,12 @@ class NSEArchivesProvider:
     def market_cap(self, trading_date: date) -> pd.DataFrame:
         return self._nse().get("capital_market", "equities_sme", "mcap", trading_date.isoformat())
 
+    def index_daily_close(self, trading_date: date) -> pd.DataFrame:
+        return self._nse().get("capital_market", "indices", "ind_close_all", trading_date.isoformat())
+
+    def index_valuation(self, trading_date: date) -> pd.DataFrame:
+        return self._nse().get("capital_market", "indices", "pe", trading_date.isoformat())
+
     def bulk_deals(self, trading_date: date) -> pd.DataFrame:
         return self._nse().get("capital_market", "equities_sme", "bulk_deals", trading_date.isoformat())
 

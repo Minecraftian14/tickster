@@ -131,6 +131,9 @@ class CompanyDocument(BaseModel):
     mime_type: str | None = None
     raw_ref: str | None = None
     text_ref: str | None = None
+    filing_id: str | None = None
+    content_hash: str | None = None
+    byte_size: int | None = None
     metadata: dict[str, Any] = Field(default_factory=dict)
     provenance: Provenance
 

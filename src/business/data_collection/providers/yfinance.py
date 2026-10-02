@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
+from hashlib import sha256
 from decimal import Decimal
 from typing import Any
 
@@ -95,21 +96,72 @@ class YahooFinanceProvider:
                 out.append(CorporateAction(instrument_id=instrument_id, action_type="stock_split", ex_date=ts.date(), ratio=str(row["Stock Splits"]), provenance=Provenance(source="yfinance", source_type="aggregator", source_dataset="Yahoo Finance actions", retrieved_at=now, observed_at=ts.to_pydatetime())))
         return out
 
+    def get_news_raw(self, symbol: str, *, count: int = 10, tab: str = "news") -> list[dict[str, Any]]:
+        ticker = self._ticker(symbol)
+        return ticker.get_news(count=count, tab=tab) or []
+
+    def search_news_raw(self, query: str, *, news_count: int = 10) -> list[dict[str, Any]]:
+        yf = _require_yfinance()
+        return yf.Search(query, news_count=news_count).news or []
+
     def fundamentals_sample(self, symbol: str) -> dict[str, Any]:
         ticker = self._ticker(symbol)
         return {"info": ticker.info, "income_statement": ticker.income_stmt.head(10).to_dict(), "balance_sheet": ticker.balance_sheet.head(10).to_dict(), "cashflow": ticker.cashflow.head(10).to_dict()}
 
     def news_sample(self, symbol: str, *, instrument_id: str | None = None) -> list[NewsItem]:
-        ticker = self._ticker(symbol)
-        now = datetime.now(timezone.utc)
         instrument_id = instrument_id or (symbol if symbol.endswith(".NS") else f"{symbol}.NS")
-        items: list[NewsItem] = []
-        for item in (ticker.news or [])[:5]:
-            content = item.get("content", item)
-            title = content.get("title", "") if isinstance(content, dict) else str(content)
-            url = None
-            if isinstance(content, dict):
-                canonical = content.get("canonicalUrl") or {}
-                url = canonical.get("url") if isinstance(canonical, dict) else None
-            items.append(NewsItem(news_id=f"yfinance:{instrument_id}:{hash(str(item))}", instrument_ids=[instrument_id], title=title, url=url, source_name="Yahoo Finance", metadata=item, provenance=Provenance(source="yfinance", source_type="aggregator", source_dataset="Yahoo Finance news", retrieved_at=now)))
-        return items
+        now = datetime.now(timezone.utc)
+        return [
+            item for item in (
+                parse_yfinance_news_item(raw, instrument_ids=[instrument_id], retrieved_at=now)
+                for raw in self.get_news_raw(symbol, count=5)
+            )
+            if item is not None
+        ]
+
+
+def parse_yfinance_news_item(item: dict[str, Any], *, instrument_ids: list[str], retrieved_at: datetime) -> NewsItem | None:
+    if not isinstance(item, dict):
+        return None
+    content = item.get("content", item)
+    if not isinstance(content, dict):
+        content = {"title": str(content)}
+    title = content.get("title") or item.get("title") or ""
+    canonical = content.get("canonicalUrl") or content.get("clickThroughUrl") or {}
+    if isinstance(canonical, dict):
+        url = canonical.get("url")
+    else:
+        url = str(canonical) if canonical else item.get("link")
+    pub_value = (content.get("pubDate") or content.get("displayTime") or item.get("providerPublishTime"))
+    published_at = None
+    if isinstance(pub_value, (int, float)):
+        published_at = datetime.fromtimestamp(pub_value, tz=timezone.utc)
+    elif pub_value:
+        try:
+            from dateutil.parser import parse
+            parsed = parse(str(pub_value))
+            published_at = parsed if parsed.tzinfo else parsed.replace(tzinfo=timezone.utc)
+        except Exception:
+            published_at = None
+    fingerprint = item.get("id") or content.get("id") or url or f"{title}|{published_at}"
+    news_id = f"yfinance:{sha256(str(fingerprint).encode('utf-8')).hexdigest()[:32]}"
+    provider = content.get("provider") or {}
+    source_name = provider.get("displayName") if isinstance(provider, dict) else None
+    summary = content.get("summary") or content.get("description") or item.get("summary")
+    return NewsItem(
+        news_id=news_id,
+        instrument_ids=list(instrument_ids),
+        title=str(title),
+        published_at=published_at,
+        url=url,
+        text=str(summary) if summary else None,
+        source_name=source_name or "Yahoo Finance",
+        metadata={"raw": item, "content_type": content.get("contentType"), "provider": provider},
+        provenance=Provenance(
+            source="yfinance",
+            source_type="aggregator",
+            source_dataset="Yahoo Finance news",
+            retrieved_at=retrieved_at,
+            published_at=published_at,
+        ),
+    )
