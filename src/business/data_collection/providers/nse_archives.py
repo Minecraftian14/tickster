@@ -1,88 +1,100 @@
 from __future__ import annotations
 
-from datetime import date, datetime, timezone
+from datetime import date, datetime, time, timezone
+from zoneinfo import ZoneInfo
+from decimal import Decimal
 from typing import Any
 
 import pandas as pd
 
+from data_collection.domains.models import Instrument, PriceBar, Provenance
+
 
 class NSEArchivesProvider:
-    """Adapter for the nse-archives package (public NSE archive datasets)."""
+    """Adapter for the optional ``nse-archives`` package."""
 
-    name = "nse-archives"
-    source_type = "open_source_exchange_archive_wrapper"
+    name = "nse"
+    source_type = "primary_exchange"
 
     @staticmethod
     def _nse():
         try:
-            from nsedata import nse  # type: ignore
+            from nse_archives import NSEArchive  # type: ignore
         except ImportError as exc:
-            raise RuntimeError(
-                "nse-archives is not installed. Install with: pip install -e '.[nse]'"
-            ) from exc
-        return nse
+            raise RuntimeError("nse-archives is not installed. Install with: pip install nse-archives") from exc
+        return NSEArchive()
 
     def health(self) -> dict[str, Any]:
         try:
             nse = self._nse()
-            return {"provider": self.name, "installed": True, "datasets": len(nse.list_datasets())}
+            datasets = nse.list_datasets()
+            return {"provider": self.name, "installed": True, "datasets": len(datasets)}
         except Exception as exc:
             return {"provider": self.name, "installed": False, "error": str(exc)}
 
     def daily_equities_with_delivery(self, trading_date: date) -> pd.DataFrame:
-        nse = self._nse()
-        return nse.get(
-            "capital_market", "equities_sme", "sec_bhavdata_full", trading_date.isoformat()
-        )
+        return self._nse().get("capital_market", "equities_sme", "sec_bhavdata_full", trading_date.isoformat())
 
     def daily_equity_bhavcopy(self, trading_date: date) -> pd.DataFrame:
-        nse = self._nse()
-        return nse.get(
-            "capital_market", "equities_sme", "bhavcopy_pr", trading_date.isoformat()
-        )
+        return self._nse().get("capital_market", "equities_sme", "bhavcopy_pr", trading_date.isoformat())
 
     def corporate_actions(self, trading_date: date) -> pd.DataFrame:
-        nse = self._nse()
-        return nse.get(
-            "capital_market", "equities_sme", "corp_actions", trading_date.isoformat()
-        )
+        return self._nse().get("capital_market", "equities_sme", "corp_actions", trading_date.isoformat())
 
     def announcements(self, trading_date: date) -> pd.DataFrame:
-        nse = self._nse()
-        return nse.get(
-            "capital_market", "equities_sme", "announcements", trading_date.isoformat()
-        )
+        return self._nse().get("capital_market", "equities_sme", "announcements", trading_date.isoformat())
 
     def board_meetings(self, trading_date: date) -> pd.DataFrame:
-        nse = self._nse()
-        return nse.get(
-            "capital_market", "equities_sme", "board_meetings", trading_date.isoformat()
-        )
+        return self._nse().get("capital_market", "equities_sme", "board_meetings", trading_date.isoformat())
 
     def market_cap(self, trading_date: date) -> pd.DataFrame:
-        nse = self._nse()
-        return nse.get(
-            "capital_market", "equities_sme", "mcap", trading_date.isoformat()
-        )
-
-    def security_master(self) -> pd.DataFrame:
-        nse = self._nse()
-        # Dataset availability/name is intentionally discovered through the library catalog
-        # rather than hard-coded here until our source-lab confirms the stable dataset key.
-        datasets = nse.list_datasets()
-        if hasattr(datasets, "to_dict"):
-            rows = datasets.to_dict("records")
-        else:
-            rows = list(datasets)
-        candidates = [
-            r for r in rows
-            if "security" in str(r).lower() and "master" in str(r).lower()
-        ]
-        raise NotImplementedError(
-            "Security-master dataset key should be selected from nse.list_datasets() in the source laboratory. "
-            f"Candidates found: {candidates[:5]}"
-        )
+        return self._nse().get("capital_market", "equities_sme", "mcap", trading_date.isoformat())
 
     @staticmethod
-    def _retrieved_at() -> datetime:
-        return datetime.now(timezone.utc)
+    def normalize_equity_daily(frame: pd.DataFrame, *, instrument: Instrument | None, symbol: str, instrument_id: str, trading_date: date) -> list[PriceBar]:
+        if frame is None or frame.empty:
+            return []
+        df = frame.copy()
+        aliases = {str(c).strip().upper(): c for c in df.columns}
+
+        def col(*names: str):
+            for name in names:
+                if name.upper() in aliases:
+                    return aliases[name.upper()]
+            return None
+
+        symbol_col = col("SYMBOL", "SYMBOL_NAME")
+        if symbol_col:
+            df = df[df[symbol_col].astype(str).str.upper() == symbol.upper()]
+        if df.empty:
+            return []
+        row = df.iloc[0]
+
+        def raw(*names):
+            c = col(*names)
+            return None if c is None else row[c]
+
+        def decimal(*names):
+            value = raw(*names)
+            if value is None or pd.isna(value):
+                return None
+            return Decimal(str(value))
+
+        def integer(*names):
+            value = raw(*names)
+            if value is None or pd.isna(value):
+                return None
+            return int(float(value))
+
+        observed = datetime.combine(trading_date, time.min, tzinfo=ZoneInfo("Asia/Kolkata"))
+        now = datetime.now(timezone.utc)
+        return [PriceBar(
+            instrument_id=instrument_id, timestamp=observed, timeframe="1d",
+            open=decimal("OPEN_PRICE", "OPEN"), high=decimal("HIGH_PRICE", "HIGH"),
+            low=decimal("LOW_PRICE", "LOW"), close=decimal("CLOSE_PRICE", "CLOSE"),
+            volume=integer("TTL_TRD_QNTY", "VOLUME"),
+            turnover=decimal("TURNOVER_LACS", "TURNOVER"),
+            delivery_quantity=integer("DELIV_QTY", "DELIVERY_QUANTITY"),
+            delivery_percent=decimal("DELIV_PER", "DELIVERY_PERCENT"),
+            provenance=Provenance(source="nse", source_type="primary_exchange", source_dataset="sec_bhavdata_full", retrieved_at=now, observed_at=observed),
+        )]

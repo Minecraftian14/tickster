@@ -24,16 +24,21 @@ class Instrument(BaseModel):
     isin: str | None = None
     symbol: str
     exchange: Literal["NSE", "BSE", "OTHER"] | None = None
+    segment: str | None = None
     instrument_key: str | None = None
     exchange_token: str | None = None
     tick_size: Decimal | None = None
     lot_size: int | None = None
+    freeze_quantity: Decimal | None = None
     name: str | None = None
+    short_name: str | None = None
     series: str | None = None
+    security_type: str | None = None
     sector: str | None = None
     industry: str | None = None
     currency: str = "INR"
     active: bool | None = None
+    cas_eligible: bool | None = None
     provenance: Provenance
 
 
@@ -50,6 +55,23 @@ class PriceBar(BaseModel):
     turnover: Decimal | None = None
     delivery_quantity: int | None = None
     delivery_percent: Decimal | None = None
+    provenance: Provenance
+
+
+class MarketQuote(BaseModel):
+    model_config = ConfigDict(extra="allow")
+    instrument_id: str
+    timestamp: datetime
+    last_price: Decimal | None = None
+    last_trade_quantity: int | None = None
+    previous_close: Decimal | None = None
+    day_open: Decimal | None = None
+    day_high: Decimal | None = None
+    day_low: Decimal | None = None
+    volume: int | None = None
+    year_high: Decimal | None = None
+    year_low: Decimal | None = None
+    raw_quote: dict[str, Any] = Field(default_factory=dict)
     provenance: Provenance
 
 

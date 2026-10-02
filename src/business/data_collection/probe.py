@@ -6,42 +6,49 @@ import os
 
 from dotenv import load_dotenv
 
-from data_collection.providers.yfinance import YahooFinanceProvider
+
+def _providers():
+    from data_collection.providers.yfinance import YahooFinanceProvider
+    from data_collection.providers.nse_archives import NSEArchivesProvider
+    providers = {
+        "yfinance": YahooFinanceProvider(),
+        "nse-archives": NSEArchivesProvider(),
+    }
+    token = os.environ.get("UPSTOX_ACCESS_TOKEN")
+    if token:
+        from data_collection.providers.upstox import UpstoxProvider
+        providers["upstox"] = UpstoxProvider(token)
+    return providers
 
 
 def main() -> None:
     load_dotenv()
-    parser = argparse.ArgumentParser(description="Probe available market-data providers")
-    parser.add_argument("provider", choices=["yfinance", "upstox"])
-    parser.add_argument("--symbol", default="RELIANCE")
-    parser.add_argument("--isin", default=None)
-    parser.add_argument("--instrument-key", default=None)
+    parser = argparse.ArgumentParser(description="Probe installed Indian-equity data providers")
+    parser.add_argument("--health", action="store_true", help="Only run cheap health/import checks")
     args = parser.parse_args()
 
-    if args.provider == "yfinance":
-        provider = YahooFinanceProvider()
-        print(json.dumps(provider.health(), indent=2))
-        records = provider.collect_price_sample(args.symbol)
-        print("\nPRICE SAMPLE")
-        for record in records:
-            print(record.model_dump_json(indent=2))
+    providers = _providers()
+    for name, provider in providers.items():
+        print(json.dumps({"provider": name, **provider.health()}, indent=2, default=str))
+
+    if args.health:
         return
 
-    token = os.environ.get("upstox_connector.upstox.anaytics_token")
-    if not token:
-        raise SystemExit("Set UPSTOX_ACCESS_TOKEN before running an Upstox probe.")
-    from data_collection.providers.upstox import UpstoxProvider
-    if not args.instrument_key:
-        raise SystemExit("Upstox requires --instrument-key, e.g. NSE_EQ|INE002A01018")
-    from datetime import date, timedelta
-    provider = UpstoxProvider(token)
-    to_date = date.today()
-    from_date = to_date - timedelta(days=7)
-    payload = provider.historical_candles_v3(args.instrument_key, "days", 1, to_date, from_date)
-    records = provider.parse_candles(payload, args.instrument_key, timeframe="1d")
-    print(json.dumps({"provider": provider.name, "records": len(records)}, indent=2))
-    for record in records[:5]:
-        print(record.model_dump_json(indent=2))
+    symbol = os.environ.get("PROBE_SYMBOL", "RELIANCE")
+    yf = providers["yfinance"]
+    if yf.health().get("installed"):
+        print("\nYFINANCE SAMPLE")
+        for record in yf.collect_price_sample(symbol, period="5d"):
+            print(record.model_dump_json())
+
+    upstox = providers.get("upstox")
+    instrument_key = os.environ.get("UPSTOX_INSTRUMENT_KEY")
+    if upstox and instrument_key:
+        from datetime import date, timedelta
+        print("\nUPSTOX SAMPLE")
+        payload = upstox.historical_candles_v3(instrument_key, "days", 1, date.today(), date.today() - timedelta(days=7))
+        for record in upstox.parse_candles(payload, os.environ.get("UPSTOX_INSTRUMENT_ID", instrument_key), timeframe="1d")[:5]:
+            print(record.model_dump_json())
 
 
 if __name__ == "__main__":

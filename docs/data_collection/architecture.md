@@ -1,41 +1,33 @@
-# Architecture
+# Data Collection Architecture
 
-## Collection -> canonical -> enrichment -> export
+## Strategy
 
-```text
-SOURCE ADAPTERS
-  yfinance / NSE / Upstox / wrappers / RBI / SEBI / etc.
-                 |
-                 v
-DOMAIN COLLECTORS
-  instruments / market / corporate_actions / fundamentals /
-  shareholding / company_events / filings / news / macro
-                 |
-                 v
-RAW STORE + CANONICAL OBJECTS
-  normalized records carrying provenance and source references
-                 |
-                 v
-PROCESSING / ENRICHMENT
-  normalize -> dedupe -> reconcile -> adjust -> derive -> NLP
-                 |
-                 v
-EXPORT / REPRESENTATION
-  JSON / Markdown / Parquet / LLM context / RAG / search / KG
-```
+Develop **domain-first**, with provider adapters hidden underneath each domain.
 
-## Domain-first development order
+The first completed spine is:
 
-1. Instruments
-2. Market/price history
-3. Corporate actions
-4. Fundamentals + shareholding
-5. Company events + filings
-6. News
-7. Macro
+`Instrument → Market → Processing → Export`
 
-Each domain gets a small source-probe suite. The probe is not the architecture; it is evidence used to select/replace provider adapters.
+## Layers
 
-## Why provider adapters are separate
+1. **Provider** — yfinance, Upstox, NSE archive access, and later alternatives.
+2. **Collection** — high-level functions by data kind; preserve raw responses and provenance.
+3. **Canonical domain model** — stable Pydantic objects independent of provider schemas.
+4. **Processing/enrichment** — validation, deduplication, reconciliation, then indicators/events/NLP.
+5. **Representation/export** — JSON/JSONL/Markdown/Parquet and later RAG-oriented views.
 
-`yfinance`, `indian-market-data`, `jugaad-data`, and `NSEPython` overlap heavily on NSE access. Likewise Upstox, FYERS, Dhan, Angel One and Zerodha overlap as broker data APIs. They should therefore be interchangeable implementations behind a domain contract rather than dependencies spread throughout the codebase.
+## Identity
+
+For cash equities, `instrument_id` prefers ISIN. Provider identifiers remain in separate fields. Upstox recommends `instrument_key` rather than `exchange_token` for API identity because exchange tokens can be reused. This gives us a stable internal identity while retaining the provider key needed for API calls.
+
+## Market providers
+
+- **yfinance** — broad, easy historical aggregation.
+- **NSE** — exchange-originated archive/reference data.
+- **Upstox** — live/current and intraday market API plus structured company fundamentals.
+
+The collection layer can retain multiple observations; processing decides how to reconcile them.
+
+## Scope
+
+v1 is **NSE cash equities only**. F&O is deliberately excluded.
