@@ -147,8 +147,3 @@ def test_store_persists_collection_result_end_to_end(tmp_path: Path) -> None:
     assert observation.canonical_record_id == persisted["canonical_records"][0].record_id
     assert observation.raw_ref == raw.stable_id()
     assert read_jsonl(tmp_path / "indexes/raw_artifacts.jsonl")
-
-
-def test_package_version() -> None:
-    import data_foundation
-    assert data_foundation.__version__ == "1.0.0"

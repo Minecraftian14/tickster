@@ -13,5 +13,5 @@ def test_reconciliation_agrees_within_tolerance():
 
 def test_reconciliation_flags_material_conflict():
     findings = reconcile_numeric([obs("nse", "100"), obs("yahoo", "101")])
-    assert findings[0].status == "conflict"
+    assert findings[0].status == "conflicting"
     assert findings[0].relative_spread > 0

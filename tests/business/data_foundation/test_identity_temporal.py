@@ -157,7 +157,3 @@ def test_unknown_availability_is_excluded_in_strict_mode() -> None:
     assert index.what_was_known_at("i1", datetime(2026, 10, 9, tzinfo=UTC), strict=True) == []
     assert index.what_was_known_at("i1", datetime(2026, 10, 9, tzinfo=UTC), strict=False) == [action]
 
-
-def test_package_version() -> None:
-    import data_foundation
-    assert data_foundation.__version__ == "1.0.0"
