@@ -50,6 +50,16 @@ class NSEArchivesProvider:
     def market_cap(self, trading_date: date) -> pd.DataFrame:
         return self._nse().get("capital_market", "equities_sme", "mcap", trading_date.isoformat())
 
+    def bulk_deals(self, trading_date: date) -> pd.DataFrame:
+        return self._nse().get("capital_market", "equities_sme", "bulk_deals", trading_date.isoformat())
+
+    def block_deals(self, trading_date: date) -> pd.DataFrame:
+        return self._nse().get("capital_market", "equities_sme", "block_deals", trading_date.isoformat())
+
+    def short_selling(self, trading_date: date) -> pd.DataFrame:
+        return self._nse().get("capital_market", "equities_sme", "short_selling", trading_date.isoformat())
+
+
     @staticmethod
     def normalize_equity_daily(frame: pd.DataFrame, *, instrument: Instrument | None, symbol: str, instrument_id: str, trading_date: date) -> list[PriceBar]:
         if frame is None or frame.empty:

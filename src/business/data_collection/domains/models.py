@@ -71,6 +71,15 @@ class MarketQuote(BaseModel):
     volume: int | None = None
     year_high: Decimal | None = None
     year_low: Decimal | None = None
+    average_price: Decimal | None = None
+    total_buy_quantity: int | None = None
+    total_sell_quantity: int | None = None
+    last_trade_time: datetime | None = None
+    bid_depth: list[dict[str, Any]] = Field(default_factory=list)
+    ask_depth: list[dict[str, Any]] = Field(default_factory=list)
+    number_of_orders: int | None = None
+    circuit_upper: Decimal | None = None
+    circuit_lower: Decimal | None = None
     raw_quote: dict[str, Any] = Field(default_factory=dict)
     provenance: Provenance
 
@@ -85,6 +94,11 @@ class CorporateAction(BaseModel):
     amount: Decimal | None = None
     ratio: str | None = None
     details: dict[str, Any] = Field(default_factory=dict)
+    face_value: str | None = None
+    company_name: str | None = None
+    series: str | None = None
+    book_closure_start: date | None = None
+    book_closure_end: date | None = None
     provenance: Provenance
 
 
@@ -142,3 +156,6 @@ class MacroObservation(BaseModel):
     unit: str | None = None
     metadata: dict[str, Any] = Field(default_factory=dict)
     provenance: Provenance
+
+# Backwards-compatible alias retained for callers that previously imported
+# ownership snapshots from models.py.

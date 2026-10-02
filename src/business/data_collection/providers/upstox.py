@@ -223,6 +223,52 @@ class UpstoxProvider:
             ))
         return out
 
+    @staticmethod
+    def parse_corporate_actions(payload: dict[str, Any], instrument_id: str, retrieved_at: datetime | None = None) -> list[CorporateAction]:
+        now = retrieved_at or datetime.now(timezone.utc)
+        out: list[CorporateAction] = []
+        rows = payload.get("data") if isinstance(payload, dict) else []
+        if not isinstance(rows, list):
+            return out
+
+        def parse_date(value: Any):
+            if value is None or str(value).strip() in {"", "-", "None", "nan"}:
+                return None
+            from dateutil.parser import parse
+            try:
+                return parse(str(value), dayfirst=True).date()
+            except Exception:
+                return None
+
+        for item in rows:
+            if not isinstance(item, dict):
+                continue
+            details = {
+                str(x.get("name")): x.get("value")
+                for x in (item.get("event_details") or [])
+                if isinstance(x, dict) and x.get("name")
+            }
+            action_type = str(item.get("name") or "unknown").strip().lower().replace(" ", "_")
+            amount = item.get("amount")
+            try:
+                amount = Decimal(str(amount)) if amount is not None else None
+            except Exception:
+                amount = None
+            out.append(CorporateAction(
+                instrument_id=instrument_id,
+                action_type=action_type,
+                announcement_date=parse_date(details.get("Announcement date")),
+                ex_date=parse_date(details.get("Ex dividend date") or details.get("Ex-Date") or item.get("expiry_date")),
+                record_date=parse_date(details.get("Record date")),
+                amount=amount,
+                ratio=str(item["ratio"]) if item.get("ratio") is not None else None,
+                details={**item, "event_details_normalized": details},
+                provenance=Provenance(
+                    source="upstox", source_type="broker_api", source_dataset="corporate-actions", retrieved_at=now,
+                ),
+            ))
+        return out
+
     def corporate_actions_normalized(self, isin: str, instrument_id: str) -> list[CorporateAction]:
         payload = self.corporate_actions(isin)
         now = datetime.now(timezone.utc)
