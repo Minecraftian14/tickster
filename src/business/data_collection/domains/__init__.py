@@ -10,6 +10,7 @@ from data_collection.domains.models import (
     Provenance,
     ShareholdingSnapshot,
     CompanyDocument,
+    CompanyPeer,
 )
 from data_collection.domains.ownership import InsiderTransaction, LargeDeal
 from data_collection.domains.indices import IndexConstituent, IndexPriceBar, IndexSnapshot, IndexValuationSnapshot, SectorClassification
@@ -18,7 +19,8 @@ from data_collection.domains.macro import MacroSeries, MacroRelease
 __all__ = [
     "RegulatoryItem", "RegulatoryDocument", "CompanyEvent", "CorporateAction", "FundamentalSnapshot", "Instrument", "MarketQuote",
     "MacroObservation", "NewsItem", "PriceBar", "Provenance", "ShareholdingSnapshot",
-    "CompanyDocument", "InsiderTransaction", "LargeDeal", "IndexConstituent", "IndexPriceBar", "IndexSnapshot", "IndexValuationSnapshot", "SectorClassification", "MacroSeries", "MacroRelease",
+    "CompanyDocument", "CompanyPeer", "InsiderTransaction", "LargeDeal", "IndexConstituent", "IndexPriceBar", "IndexSnapshot", "IndexValuationSnapshot", "SectorClassification", "MacroSeries", "MacroRelease",
+    "DocumentAsset", "Filing", "XBRLFact", "RegulatoryItem", "RegulatoryDocument",
 ]
 from .filings import DocumentAsset, Filing, XBRLFact
 

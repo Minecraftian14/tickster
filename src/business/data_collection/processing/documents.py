@@ -81,13 +81,19 @@ def parse_xbrl_facts(
     instrument_id: str | None = None,
     provenance: Any,
     include_raw_xml: bool = False,
+    issues: list[dict[str, Any]] | None = None,
 ) -> list[XBRLFact]:
     """Parse XBRL facts while preserving context, dimensions and raw concepts.
 
     This is deliberately taxonomy-agnostic. Financial concept mapping belongs
     in a later enrichment layer.
     """
-    root = ET.fromstring(xml_bytes)
+    try:
+        root = ET.fromstring(xml_bytes)
+    except ET.ParseError as exc:
+        if issues is not None:
+            issues.append({"source": getattr(provenance, "source", "unknown"), "operation": "parse_xbrl_facts", "message": str(exc), "error_type": type(exc).__name__})
+        raise
     contexts: dict[str, dict[str, Any]] = {}
     units: dict[str, str] = {}
 
@@ -149,6 +155,8 @@ def parse_xbrl_facts(
             continue
         value_text = (elem.text or "").strip()
         if not value_text and list(elem):
+            if issues is not None:
+                issues.append({"source": getattr(provenance, "source", "unknown"), "operation": "parse_xbrl_facts", "message": "Skipped nested XBRL element without scalar text", "concept": lname})
             continue
         context = contexts.get(context_ref, {})
         raw_value: Any = value_text

@@ -1,5 +1,5 @@
 { 'installed_node_packs': [],
-  'node_packs': [ 'C:\\BASE\\WORKSPACES\\CODING\\tickster\\src\\business\\nodes_pack'],
+  'node_packs': [ 'src\\business\\nodes_pack'],
   'nodes': { 0: { 'commented_out': False,
                   'id': 0,
                   'midtop': (422.0, 357.0),

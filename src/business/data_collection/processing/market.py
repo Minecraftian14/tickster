@@ -7,12 +7,18 @@ from typing import Iterable
 from data_collection.domains.models import PriceBar
 
 
-def deduplicate_price_bars(items: Iterable[PriceBar]) -> list[PriceBar]:
-    """Deduplicate by instrument/timeframe/timestamp, retaining the last record."""
-    by_key: dict[tuple[str, str, object], PriceBar] = {}
+def deduplicate_price_bars(items: Iterable[PriceBar], *, preserve_sources: bool = True) -> list[PriceBar]:
+    """Deduplicate observations while retaining independent source observations by default."""
+    by_key: dict[tuple, PriceBar] = {}
     for item in items:
-        by_key[(item.instrument_id, item.timeframe, item.timestamp)] = item
-    return sorted(by_key.values(), key=lambda x: (x.instrument_id, x.timeframe, x.timestamp))
+        source = item.provenance.source if preserve_sources else None
+        by_key[(item.instrument_id, item.timeframe, item.timestamp, source)] = item
+    return sorted(by_key.values(), key=lambda x: (x.instrument_id, x.timeframe, x.timestamp, x.provenance.source))
+
+
+def collapse_price_sources(items: Iterable[PriceBar]) -> list[PriceBar]:
+    """Explicitly collapse multiple source observations into one last-seen record."""
+    return deduplicate_price_bars(items, preserve_sources=False)
 
 
 def validate_price_bars(items: Iterable[PriceBar]) -> list[str]:

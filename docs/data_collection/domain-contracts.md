@@ -14,6 +14,8 @@ The public application should depend on these domain-level operations rather tha
 - `get_daily_bars(instrument, start, end, sources=...)`
 - `get_intraday_bars(instrument, start, end, interval, sources=...)`
 - `get_eod_statistics(date, sources=...)`
+- `get_ltp(instruments)`
+- `get_full_quotes(instruments)`
 
 ## Corporate actions
 
@@ -26,10 +28,13 @@ The public application should depend on these domain-level operations rather tha
 - `get_balance_sheets(...)`
 - `get_cash_flows(...)`
 - `get_key_ratios(...)`
+- `get_company_peers(instrument, sources=...)`
 
-## Shareholding
+## Shareholding / ownership / market events
 
 - `get_shareholding_history(instrument, sources=...)`
+- `get_insider_transactions(instrument, start, end, sources=...)`
+- `get_large_deals(instrument, mode=..., sources=...)`
 
 ## Company events / filings
 
@@ -37,13 +42,22 @@ The public application should depend on these domain-level operations rather tha
 - `get_board_meetings(instrument, start, end, sources=...)`
 - `get_filings(instrument, start, end, sources=...)`
 - `get_document(document_id)`
+- `get_filing_assets(filing)`
 
 ## News
 
 - `get_news(instruments, start, end, sources=...)`
 
-## Macro
+## Indices / benchmark context
+
+- `get_index_snapshot(index)`
+- `get_index_constituents(index)`
+- `get_index_history(index, start, end)`
+- `get_sector_classification(instrument)`
+
+## Macro / regulatory
 
 - `get_macro_series(series_id, start, end, sources=...)`
+- `get_regulatory_items(category, start, end, sources=...)`
 
-Every operation returns a domain result containing canonical records, raw evidence, and errors.
+Every operation returns a domain result containing canonical records, raw evidence, related records where applicable, request errors, and diagnostic issues.

@@ -135,6 +135,7 @@ def _normalize_filing(
     symbol: str | None,
     retrieved_at: datetime,
     assets: list[DocumentAsset],
+    filing_id: str | None = None,
 ) -> Filing:
     raw_symbol = str(_first(row, "symbol", "sm_symbol", "nse_symbol") or symbol or "").strip().upper() or None
     instrument_id = instrument.instrument_id if instrument else (f"NSE:{raw_symbol}" if raw_symbol else None)
@@ -156,9 +157,10 @@ def _normalize_filing(
     if isinstance(details_url, str) and not details_url.startswith(("http://", "https://")):
         details_url = None
 
+    filing_id = filing_id or _filing_id(row, category)
     filing_assets = [a.asset_id for a in assets]
     return Filing(
-        filing_id=_filing_id(row, category),
+        filing_id=filing_id,
         instrument_id=instrument_id,
         symbol=raw_symbol,
         company_name=_first(row, "companyName", "company_name", "sm_name", "issuer"),
@@ -212,14 +214,17 @@ class FilingCollector:
             source="nse", domain=self.domain, retrieved_at=now, payload=payload, request=request
         ))
         for row in _records_from_payload(payload):
+            filing_id = _filing_id(row, category)
             assets: list[DocumentAsset] = []
             for url, label in _asset_candidates(row):
                 assets.append(NSEFilingsProvider.asset_from_url(
                     url,
                     title=label,
+                    filing_id=filing_id,
                     instrument=instrument,
                     retrieved_at=now,
                 ))
+            result.related_records.extend(assets)
             result.records.append(_normalize_filing(
                 row,
                 category=category,
@@ -227,6 +232,7 @@ class FilingCollector:
                 symbol=symbol,
                 retrieved_at=now,
                 assets=assets,
+                filing_id=filing_id,
             ))
         return result
 

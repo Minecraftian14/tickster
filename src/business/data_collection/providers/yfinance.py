@@ -45,12 +45,24 @@ class YahooFinanceProvider:
 
     def collect_history(self, symbol: str, *, instrument_id: str, period: str = "1mo", interval: str = "1d", start=None, end=None) -> list[PriceBar]:
         df = self.quote_history(symbol, period=period, interval=interval, start=start, end=end)
+        return self.parse_history_frame(df, symbol=symbol, instrument_id=instrument_id, interval=interval)
+
+    @staticmethod
+    def parse_history_frame(df: pd.DataFrame, *, symbol: str, instrument_id: str, interval: str, source_dataset: str = "Yahoo Finance chart history") -> list[PriceBar]:
         now = datetime.now(timezone.utc)
+        if df is None or df.empty:
+            return []
         out: list[PriceBar] = []
+        required = {"Open", "High", "Low", "Close", "Volume"}
+        missing = required.difference(df.columns)
+        if missing:
+            raise ValueError(f"Yahoo Finance history missing columns: {sorted(missing)}")
         for ts, row in df.iterrows():
             observed = pd.Timestamp(ts).to_pydatetime()
             if observed.tzinfo is None:
                 observed = observed.replace(tzinfo=timezone.utc)
+            else:
+                observed = observed.astimezone(timezone.utc)
             out.append(PriceBar(
                 instrument_id=instrument_id, timestamp=observed, timeframe=interval,
                 open=Decimal(str(row["Open"])) if pd.notna(row["Open"]) else None,
@@ -58,7 +70,7 @@ class YahooFinanceProvider:
                 low=Decimal(str(row["Low"])) if pd.notna(row["Low"]) else None,
                 close=Decimal(str(row["Close"])) if pd.notna(row["Close"]) else None,
                 volume=int(row["Volume"]) if pd.notna(row["Volume"]) else None,
-                provenance=Provenance(source="yfinance", source_type="aggregator", source_dataset="Yahoo Finance chart history", retrieved_at=now, observed_at=observed),
+                provenance=Provenance(source="yfinance", source_type="aggregator", source_dataset=source_dataset, retrieved_at=now, observed_at=observed),
             ))
         return out
 
@@ -71,6 +83,8 @@ class YahooFinanceProvider:
             observed = pd.Timestamp(ts).to_pydatetime()
             if observed.tzinfo is None:
                 observed = observed.replace(tzinfo=timezone.utc)
+            else:
+                observed = observed.astimezone(timezone.utc)
             out.append(PriceBar(
                 instrument_id=instrument_id, timestamp=observed, timeframe="1d",
                 open=Decimal(str(row["Open"])) if pd.notna(row["Open"]) else None,

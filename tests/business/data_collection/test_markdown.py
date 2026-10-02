@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from business.data_collection.export.markdown import (
+from data_collection.export.markdown import (
     models_to_markdown,
     render_markdown,
     render_markdown_raw_json,

@@ -65,6 +65,7 @@ class MarketQuote(BaseModel):
     last_price: Decimal | None = None
     last_trade_quantity: int | None = None
     previous_close: Decimal | None = None
+    net_change: Decimal | None = None
     day_open: Decimal | None = None
     day_high: Decimal | None = None
     day_low: Decimal | None = None
@@ -74,12 +75,23 @@ class MarketQuote(BaseModel):
     average_price: Decimal | None = None
     total_buy_quantity: int | None = None
     total_sell_quantity: int | None = None
+    open_interest: int | None = None
+    previous_oi: int | None = None
+    oi_day_high: int | None = None
+    oi_day_low: int | None = None
     last_trade_time: datetime | None = None
+    ohlc_timestamp: datetime | None = None
     bid_depth: list[dict[str, Any]] = Field(default_factory=list)
     ask_depth: list[dict[str, Any]] = Field(default_factory=list)
     number_of_orders: int | None = None
     circuit_upper: Decimal | None = None
     circuit_lower: Decimal | None = None
+    indicative_equilibrium_price: Decimal | None = None
+    indicative_equilibrium_quantity: int | None = None
+    indicative_imbalance_quantity_total: int | None = None
+    indicative_imbalance_quantity_market: int | None = None
+    reference_price: Decimal | None = None
+    cas_eligible: bool | None = None
     raw_quote: dict[str, Any] = Field(default_factory=dict)
     provenance: Provenance
 
@@ -106,9 +118,27 @@ class FundamentalSnapshot(BaseModel):
     model_config = ConfigDict(extra="allow")
     instrument_id: str
     period_end: date | None = None
+    period_start: date | None = None
     period_type: str | None = None
     statement_type: str | None = None
+    statement_name: str | None = None
+    fiscal_year: str | None = None
+    units_in: str | None = None
     metrics: dict[str, Any] = Field(default_factory=dict)
+    provenance: Provenance
+
+
+class CompanyPeer(BaseModel):
+    model_config = ConfigDict(extra="allow")
+    instrument_id: str
+    peer_instrument_key: str | None = None
+    peer_isin: str | None = None
+    peer_name: str | None = None
+    sector: str | None = None
+    description: str | None = None
+    sector_market_cap_inr: Decimal | None = None
+    sector_market_cap_usd: Decimal | None = None
+    metadata: dict[str, Any] = Field(default_factory=dict)
     provenance: Provenance
 
 

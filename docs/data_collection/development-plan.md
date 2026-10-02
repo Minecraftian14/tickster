@@ -1,37 +1,48 @@
 # Development plan
 
-## Chosen strategy: domain-first with provider probes inside each domain
+## Current strategy
 
-We will not start by installing every candidate library. That produces lots of disconnected demos and does not establish the canonical data model.
+Develop domain-first. Complete each domain enough to establish the information capability, then harden shared collection infrastructure before moving into heavier enrichment.
 
-Instead:
+## Domain status
 
-1. **Instrument domain**: define canonical identity and mapping requirements (ISIN, NSE symbol, instrument key, company name, active status, sector/industry where available).
-2. **Market domain**: finish daily OHLCV end-to-end using yfinance + NSE, then add one operational broker feed (Upstox). Keep raw responses and provenance.
-3. **Corporate actions**: normalize dividends/splits/bonus/rights/buybacks and test reconciliation against price history.
-4. **Fundamentals/shareholding**: collect statements, ratios, profiles, ownership. Candidate structured sources such as Stoxim are evaluated here.
-5. **Company events/filings**: build the document ingestion path from exchange/regulatory/company sources.
-6. **News**: build event-oriented news collection, not just sentiment scores.
-7. **Macro**: RBI data and release metadata.
+1. Instrument — complete enough for stable identity.
+2. Market — functionally complete for EOD/historical/cross-source collection; hardening in progress.
+3. Corporate actions — complete.
+4. Fundamentals/shareholding — collected; canonical-period hardening in progress.
+5. Company events/filings/documents — source coverage established; deeper extraction remains in enrichment.
+6. News — source collection established; entity/event enrichment remains.
+7. Index / benchmark context — complete for current/historical structured context.
+8. Macro / regulatory — source coverage established.
 
-Every domain has a provider-test matrix. The matrix is evidence for source selection, not the primary development objective.
+## Hardening milestone
 
-## Storage principle
+Before the enrichment layer, resolve:
 
-For every fetched item we retain:
+1. package/import identity,
+2. version metadata,
+3. historical request chunking,
+4. complete canonical market quotes,
+5. period-aware fundamentals,
+6. persistent raw evidence,
+7. source-aware observation preservation,
+8. filing/asset relationships,
+9. observable parser issues,
+10. documentation/source registry synchronization.
 
-- the raw provider payload (or immutable reference to it),
-- the canonical normalized record,
-- source/provider,
-- source dataset/endpoint,
-- observed/published/retrieved timestamps where applicable,
-- request parameters,
-- retrieval errors.
+## Enrichment phase after hardening
 
-## No F&O in v1
+- entity resolution / identifier graph,
+- source reconciliation,
+- corporate-event normalization,
+- revision chains,
+- financial concept mapping,
+- derived market/financial features,
+- document text extraction and structure,
+- news/entity linking,
+- temporal company timeline,
+- embeddings and retrieval indexes.
 
-The project is equities-only. Futures/options/open-interest/Greeks/option-chain collectors are excluded from v1, though the interfaces can be extended later.
+## Representation phase
 
-## No BSE in v1
-
-BSE is intentionally excluded from the working architecture. It can be added as an independent provider later without changing domain models.
+The same canonical corpus should support JSON, JSONL, Markdown, Parquet, company dossiers, timelines, RAG chunks, semantic search and knowledge-graph-like views.

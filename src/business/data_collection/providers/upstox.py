@@ -12,6 +12,50 @@ from data_collection.domains.models import CorporateAction, Instrument, MarketQu
 from data_collection.processing.instruments import canonical_instrument_id
 
 
+def _decimal(value: Any) -> Decimal | None:
+    if value in (None, "", "-", "None", "nan", "NaN"):
+        return None
+    try:
+        return Decimal(str(value).replace(",", ""))
+    except Exception:
+        return None
+
+
+def _int(value: Any) -> int | None:
+    if value in (None, "", "-", "None", "nan", "NaN"):
+        return None
+    try:
+        return int(float(value))
+    except Exception:
+        return None
+
+
+def _parse_epoch_millis(value: Any, *, issues: list[dict[str, Any]] | None, context: dict[str, Any]) -> datetime | None:
+    if value in (None, "", "-", "None"):
+        return None
+    try:
+        return datetime.fromtimestamp(float(value) / 1000, tz=timezone.utc)
+    except Exception as exc:
+        if issues is not None:
+            issues.append({"source": "upstox", "operation": "parse_timestamp", "message": str(exc), **context, "raw": value})
+        return None
+
+
+def _parse_timestamp(value: Any, *, default: datetime | None, issues: list[dict[str, Any]] | None, context: dict[str, Any]) -> datetime:
+    if isinstance(value, (int, float)):
+        parsed = _parse_epoch_millis(value, issues=issues, context=context)
+        return parsed or default or datetime.now(timezone.utc)
+    if value:
+        try:
+            parsed = datetime.fromisoformat(str(value).replace("Z", "+00:00"))
+            return parsed.astimezone(timezone.utc) if parsed.tzinfo else parsed.replace(tzinfo=timezone.utc)
+        except ValueError as exc:
+            if issues is not None:
+                issues.append({"source": "upstox", "operation": "parse_timestamp", "message": str(exc), **context, "raw": value})
+    if default is not None:
+        return default
+    raise ValueError(f"Unable to parse required timestamp: {value!r}")
+
 class UpstoxProvider:
     """Thin REST adapter around documented Upstox APIs."""
 
@@ -114,6 +158,9 @@ class UpstoxProvider:
     def company_profile(self, isin: str) -> dict[str, Any]:
         return self._get(f"/v2/fundamentals/{isin}/profile")
 
+    def competitors(self, isin: str) -> dict[str, Any]:
+        return self._get(f"/v2/fundamentals/{isin}/competitors")
+
     def balance_sheet(self, isin: str, *, full_statement: bool = False, statement_type: str = "consolidated") -> dict[str, Any]:
         return self._get(f"/v2/fundamentals/{isin}/balance-sheet", params={"fs": "true" if full_statement else "false", "type": statement_type})
 
@@ -139,89 +186,107 @@ class UpstoxProvider:
         )
 
     @staticmethod
-    def parse_candles(payload: dict[str, Any], instrument_id: str, *, timeframe: str, retrieved_at: datetime | None = None) -> list[PriceBar]:
+    def parse_candles(payload: dict[str, Any], instrument_id: str, *, timeframe: str, retrieved_at: datetime | None = None, issues: list[dict[str, Any]] | None = None) -> list[PriceBar]:
         now = retrieved_at or datetime.now(timezone.utc)
-        candles = payload.get("data", {}).get("candles", [])
+        candles = ((payload.get("data") or {}).get("candles") or [])
         out: list[PriceBar] = []
-        for c in candles:
-            if len(c) < 6:
-                continue
-            ts = datetime.fromisoformat(str(c[0]).replace("Z", "+00:00"))
-            if ts.tzinfo is None:
-                ts = ts.replace(tzinfo=timezone.utc)
-            out.append(PriceBar(
-                instrument_id=instrument_id, timestamp=ts, timeframe=timeframe,
-                open=Decimal(str(c[1])) if c[1] is not None else None,
-                high=Decimal(str(c[2])) if c[2] is not None else None,
-                low=Decimal(str(c[3])) if c[3] is not None else None,
-                close=Decimal(str(c[4])) if c[4] is not None else None,
-                volume=int(c[5]) if c[5] is not None else None,
-                provenance=Provenance(source="upstox", source_type="broker_api", source_dataset="historical-candle-v3", retrieved_at=now, observed_at=ts),
-            ))
+        for index, c in enumerate(candles):
+            try:
+                if not isinstance(c, (list, tuple)) or len(c) < 6:
+                    raise ValueError("candle must contain at least timestamp + OHLCV")
+                ts = _parse_timestamp(c[0], default=None, issues=issues, context={"row": index, "field": "timestamp"})
+                out.append(PriceBar(
+                    instrument_id=instrument_id, timestamp=ts, timeframe=timeframe,
+                    open=_decimal(c[1]), high=_decimal(c[2]), low=_decimal(c[3]), close=_decimal(c[4]),
+                    volume=_int(c[5]),
+                    provenance=Provenance(source="upstox", source_type="broker_api", source_dataset="historical-candle-v3", retrieved_at=now, observed_at=ts),
+                ))
+            except Exception as exc:
+                if issues is not None:
+                    issues.append({"source": "upstox", "operation": "parse_candles", "message": str(exc), "row": index, "raw": c})
         return out
 
     @staticmethod
-    def parse_ltp(payload: dict[str, Any], instrument_id_by_key: dict[str, str], retrieved_at: datetime | None = None) -> list[MarketQuote]:
+    def parse_ltp(payload: dict[str, Any], instrument_id_by_key: dict[str, str], retrieved_at: datetime | None = None, *, issues: list[dict[str, Any]] | None = None) -> list[MarketQuote]:
         now = retrieved_at or datetime.now(timezone.utc)
         out: list[MarketQuote] = []
         for key, item in (payload.get("data") or {}).items():
+            if not isinstance(item, dict):
+                if issues is not None:
+                    issues.append({"source": "upstox", "operation": "parse_ltp", "message": "Skipped non-object quote", "instrument_key": key, "raw": item})
+                continue
             instrument_id = instrument_id_by_key.get(key, key)
-            ltt = item.get("ltt") or item.get("last_trade_time")
-            if isinstance(ltt, (int, float)):
-                observed = datetime.fromtimestamp(ltt / 1000, tz=timezone.utc)
-            elif ltt:
-                try:
-                    observed = datetime.fromisoformat(str(ltt).replace("Z", "+00:00"))
-                    if observed.tzinfo is None:
-                        observed = observed.replace(tzinfo=timezone.utc)
-                except ValueError:
-                    observed = now
-            else:
-                observed = now
+            observed = _parse_timestamp(item.get("ltt") or item.get("last_trade_time"), default=now, issues=issues, context={"instrument_key": key, "field": "last_trade_time"})
             out.append(MarketQuote(
                 instrument_id=instrument_id, timestamp=observed,
-                last_price=Decimal(str(item["ltp"])) if item.get("ltp") is not None else None,
-                last_trade_quantity=int(item["ltq"]) if item.get("ltq") is not None else None,
-                previous_close=Decimal(str(item["cp"])) if item.get("cp") is not None else None,
-                volume=int(item["volume"]) if item.get("volume") is not None else None,
+                last_price=_decimal(item.get("ltp")),
+                last_trade_quantity=_int(item.get("ltq")),
+                previous_close=_decimal(item.get("cp")),
+                volume=_int(item.get("volume")),
                 raw_quote=item,
                 provenance=Provenance(source="upstox", source_type="broker_api", source_dataset="ltp-v3", retrieved_at=now, observed_at=observed),
             ))
         return out
 
     @staticmethod
-    def parse_full_quotes(payload: dict[str, Any], instrument_id_by_key: dict[str, str], retrieved_at: datetime | None = None) -> list[MarketQuote]:
+    def parse_full_quotes(payload: dict[str, Any], instrument_id_by_key: dict[str, str], retrieved_at: datetime | None = None, *, issues: list[dict[str, Any]] | None = None) -> list[MarketQuote]:
         now = retrieved_at or datetime.now(timezone.utc)
         out: list[MarketQuote] = []
         for key, item in (payload.get("data") or {}).items():
+            if not isinstance(item, dict):
+                if issues is not None:
+                    issues.append({"source": "upstox", "operation": "parse_full_quotes", "message": "Skipped non-object quote", "instrument_key": key, "raw": item})
+                continue
             instrument_id = instrument_id_by_key.get(key, key)
-            ohlc = item.get("live_ohlc") or item.get("ohlc") or {}
-            ts = ohlc.get("ts") or item.get("ts")
-            if isinstance(ts, (int, float)):
-                observed = datetime.fromtimestamp(ts / 1000, tz=timezone.utc)
-            elif ts:
-                try:
-                    observed = datetime.fromisoformat(str(ts).replace("Z", "+00:00"))
-                    if observed.tzinfo is None:
-                        observed = observed.replace(tzinfo=timezone.utc)
-                except ValueError:
-                    observed = now
-            else:
-                observed = now
+            ohlc = item.get("ohlc") or item.get("live_ohlc") or {}
+            if not isinstance(ohlc, dict):
+                ohlc = {}
+            observed = _parse_timestamp(item.get("timestamp"), default=now, issues=issues, context={"instrument_key": key, "field": "timestamp"})
+            ohlc_ts = _parse_timestamp(ohlc.get("ts"), default=None, issues=issues, context={"instrument_key": key, "field": "ohlc.ts"})
+            depth = item.get("depth") or {}
+            buy = depth.get("buy") if isinstance(depth, dict) else []
+            sell = depth.get("sell") if isinstance(depth, dict) else []
+            buy = buy if isinstance(buy, list) else []
+            sell = sell if isinstance(sell, list) else []
+            order_count = sum(_int(level.get("orders")) or 0 for level in [*buy, *sell] if isinstance(level, dict))
             out.append(MarketQuote(
                 instrument_id=instrument_id, timestamp=observed,
-                last_price=Decimal(str(item["last_price"])) if item.get("last_price") is not None else (Decimal(str(item["ltp"])) if item.get("ltp") is not None else None),
-                previous_close=Decimal(str(item["prev_close_price"])) if item.get("prev_close_price") is not None else None,
-                day_open=Decimal(str(ohlc["open"])) if ohlc.get("open") is not None else None,
-                day_high=Decimal(str(ohlc["high"])) if ohlc.get("high") is not None else None,
-                day_low=Decimal(str(ohlc["low"])) if ohlc.get("low") is not None else None,
-                volume=int(item["volume"]) if item.get("volume") is not None else (int(ohlc["volume"]) if ohlc.get("volume") is not None else None),
-                year_high=Decimal(str(item["year_high"])) if item.get("year_high") is not None else None,
-                year_low=Decimal(str(item["year_low"])) if item.get("year_low") is not None else None,
+                last_price=_decimal(item.get("last_price") if item.get("last_price") is not None else item.get("ltp")),
+                last_trade_quantity=_int(item.get("last_trade_quantity") if item.get("last_trade_quantity") is not None else item.get("ltq")),
+                previous_close=_decimal(item.get("prev_close_price")),
+                net_change=_decimal(item.get("net_change")),
+                day_open=_decimal(ohlc.get("open")),
+                day_high=_decimal(ohlc.get("high")),
+                day_low=_decimal(ohlc.get("low")),
+                volume=_int(item.get("volume") if item.get("volume") is not None else ohlc.get("volume")),
+                year_high=_decimal(item.get("year_high")),
+                year_low=_decimal(item.get("year_low")),
+                average_price=_decimal(item.get("average_price")),
+                total_buy_quantity=_int(item.get("total_buy_quantity")),
+                total_sell_quantity=_int(item.get("total_sell_quantity")),
+                open_interest=_int(item.get("oi")),
+                previous_oi=_int(item.get("previous_oi")),
+                oi_day_high=_int(item.get("oi_day_high")),
+                oi_day_low=_int(item.get("oi_day_low")),
+                last_trade_time=_parse_epoch_millis(item.get("last_trade_time"), issues=issues, context={"instrument_key": key, "field": "last_trade_time"}),
+                ohlc_timestamp=ohlc_ts,
+                bid_depth=buy,
+                ask_depth=sell,
+                number_of_orders=order_count,
+                circuit_upper=_decimal(item.get("upper_circuit_limit")),
+                circuit_lower=_decimal(item.get("lower_circuit_limit")),
+                indicative_equilibrium_price=_decimal(item.get("indicative_equilibrium_price")),
+                indicative_equilibrium_quantity=_int(item.get("indicative_equilibrium_quantity")),
+                indicative_imbalance_quantity_total=_int(item.get("indicative_imbalance_quantity_total")),
+                indicative_imbalance_quantity_market=_int(item.get("indicative_imbalance_quantity_market")),
+                reference_price=_decimal(item.get("reference_price")),
+                cas_eligible=item.get("cas_eligible") if isinstance(item.get("cas_eligible"), bool) else None,
                 raw_quote=item,
                 provenance=Provenance(source="upstox", source_type="broker_api", source_dataset="full-market-quote-v3", retrieved_at=now, observed_at=observed),
             ))
         return out
+
+
 
     @staticmethod
     def parse_corporate_actions(payload: dict[str, Any], instrument_id: str, retrieved_at: datetime | None = None) -> list[CorporateAction]:

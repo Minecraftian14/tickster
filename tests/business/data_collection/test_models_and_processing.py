@@ -3,7 +3,7 @@ from decimal import Decimal
 
 from data_collection.domains.models import Instrument, PriceBar, Provenance
 from data_collection.processing.instruments import canonical_instrument_id, deduplicate_instruments
-from data_collection.processing.market import deduplicate_price_bars, reconcile_prices, validate_price_bars
+from data_collection.processing.market import collapse_price_sources, deduplicate_price_bars, reconcile_prices, validate_price_bars
 
 
 def prov(source: str) -> Provenance:
@@ -33,8 +33,12 @@ def test_price_bars_deduplicate_and_sort():
     b = PriceBar(instrument_id="INE1", timestamp=ts1, timeframe="1d", close=Decimal("102"), provenance=prov("b"))
     c = PriceBar(instrument_id="INE1", timestamp=ts2, timeframe="1d", close=Decimal("99"), provenance=prov("a"))
     out = deduplicate_price_bars([a, b, c])
-    assert [x.timestamp for x in out] == [ts2, ts1]
-    assert out[-1].close == Decimal("102")
+    assert len(out) == 3
+    assert [x.timestamp for x in out] == [ts2, ts1, ts1]
+    assert [x.provenance.source for x in out[-2:]] == ["a", "b"]
+    collapsed = collapse_price_sources([a, b, c])
+    assert [x.timestamp for x in collapsed] == [ts2, ts1]
+    assert collapsed[-1].close == Decimal("102")
 
 
 def test_validation_and_reconciliation():
