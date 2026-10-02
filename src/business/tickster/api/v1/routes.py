@@ -1,8 +1,7 @@
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, Request
 
 from tickster.models import HelloResponse
 from tickster.versioning import add_api_version
-
 
 router = APIRouter()
 

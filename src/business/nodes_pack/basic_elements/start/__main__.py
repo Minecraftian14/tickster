@@ -1,4 +1,4 @@
-from nodes_pack import ExecutionGraph, execution_node
+from nodes_pack import ExecutionGraph
 
 
 def start() -> ExecutionGraph:

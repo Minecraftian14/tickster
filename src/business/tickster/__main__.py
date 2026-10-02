@@ -1,17 +1,16 @@
 import os
 
+import uvicorn
+from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.responses import RedirectResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
-import uvicorn
 
-from dotenv import load_dotenv
 load_dotenv()
 
 from ngrok_service import connect_tunnel
-from tickster.versioning import discover_api_versions, get_latest_version, get_stable_version, VersionRouter, chain, matches_version
-
+from tickster.versioning import discover_api_versions, get_latest_version, get_stable_version, chain, matches_version
 
 app = FastAPI(title="Upstox Connector", version="0.1.0")
 
@@ -86,12 +85,13 @@ def main():
 
     if os.getenv("ENVIRONMENT") == "local":
         connect_tunnel(
-            auth_token=os.getenv("upstox_connector.ngrok_token", None), 
+            auth_token=os.getenv("upstox_connector.ngrok_token", None),
             address=port,
-            endpoint=os.getenv("upstox_connector.ngrok_end_point", None), 
+            endpoint=os.getenv("upstox_connector.ngrok_end_point", None),
         )
 
     uvicorn.run("upstox_connector.__main__:app", host=host, port=port, reload=True)
+
 
 if __name__ == "__main__":
     main()

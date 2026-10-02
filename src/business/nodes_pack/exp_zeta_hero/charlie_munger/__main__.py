@@ -1,5 +1,5 @@
 from nodes_pack import execution_node, ExecutionGraph
-from nodes_pack.exp_zeta_hero.charlie_munger_analyst import charlie_munger
+from exp.exp_zeta_hero.charlie_munger_analyst import charlie_munger
 
 
 @execution_node

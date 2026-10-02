@@ -1,5 +1,5 @@
 from nodes_pack import execution_node, ExecutionGraph
-from nodes_pack.exp_zeta_hero.stanley_druckenmiller_analyst import stanley_druckenmiller
+from exp.exp_zeta_hero.stanley_druckenmiller_analyst import stanley_druckenmiller
 
 
 @execution_node

@@ -1,14 +1,13 @@
-import inspect, os, re
-
-from functools import wraps
-
+import importlib
+import inspect
+import os
+import pkgutil
+import re
 from dataclasses import dataclass
+from functools import wraps
 
 from fastapi import APIRouter
 from starlette.routing import Match
-
-import importlib
-import pkgutil
 
 
 @dataclass(frozen=True)
@@ -36,7 +35,7 @@ def discover_api_versions():
         if router is None: continue
 
         api_versions.append((int(name[1:]), router))
-    
+
     api_versions.sort()
 
     previous = None
@@ -77,7 +76,7 @@ def matches_version(scope: dict, version: VersionRouter) -> bool:
 
 def add_api_version(function):
     match = re.search(r"\.api\.v(\d+).", function.__module__)
-    version = "v1" if match is None else f"v{match[1]}" 
+    version = "v1" if match is None else f"v{match[1]}"
 
     def inject_attribute(response):
         if hasattr(response, "api_version"): response.api_version = version

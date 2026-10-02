@@ -1,5 +1,5 @@
 from nodes_pack import execution_node, ExecutionGraph
-from nodes_pack.exp_zeta_hero.mordecai_analyst import mordecai
+from exp.exp_zeta_hero.mordecai_analyst import mordecai
 
 
 @execution_node

@@ -1,15 +1,8 @@
-import os
-
-from fastapi import FastAPI
-from fastapi.responses import RedirectResponse
-from starlette.middleware.base import BaseHTTPMiddleware
-from starlette.requests import Request
-import uvicorn
-
 from dotenv import load_dotenv
+from fastapi import FastAPI
+
 load_dotenv()
 
-from ngrok_service import connect_tunnel
 from tickster.api_version_mechanism import (
     VersionRouter,
     discover_api_versions,
@@ -29,8 +22,6 @@ class ServerControls:
         self.refresh_api_versions()
         self.app.add_middleware(VersionFallbackMiddleware)
 
-
     def refresh_api_versions(self):
         self.api_versions = discover_api_versions()
         self.api_routers = {v.version: v for v in VERSIONS}
-

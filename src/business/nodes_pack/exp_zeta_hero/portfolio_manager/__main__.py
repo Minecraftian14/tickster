@@ -1,5 +1,5 @@
 from nodes_pack import execution_node, ExecutionGraph
-from nodes_pack.exp_zeta_hero.portfolio_manager_analyst import portfolio_manager
+from exp.exp_zeta_hero.portfolio_manager_analyst import portfolio_manager
 
 
 @execution_node

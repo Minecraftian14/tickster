@@ -1,5 +1,5 @@
 from nodes_pack import execution_node, ExecutionGraph
-from nodes_pack.exp_zeta_hero.rakesh_jhunjhunwala_analyst import rakesh_jhunjhunwala
+from exp.exp_zeta_hero.rakesh_jhunjhunwala_analyst import rakesh_jhunjhunwala
 
 
 @execution_node

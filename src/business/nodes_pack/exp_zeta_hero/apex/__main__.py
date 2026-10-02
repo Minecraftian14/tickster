@@ -1,5 +1,5 @@
 from nodes_pack import execution_node, ExecutionGraph
-from nodes_pack.exp_zeta_hero.apex_analyst import apex
+from exp.exp_zeta_hero.apex_analyst import apex
 
 
 @execution_node

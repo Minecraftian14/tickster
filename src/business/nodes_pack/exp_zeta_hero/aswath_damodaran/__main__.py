@@ -1,5 +1,5 @@
 from nodes_pack import execution_node, ExecutionGraph
-from nodes_pack.exp_zeta_hero.aswath_damodaran_analyst import aswath_damodaran
+from exp.exp_zeta_hero.aswath_damodaran_analyst import aswath_damodaran
 
 
 @execution_node

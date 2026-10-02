@@ -1,5 +1,5 @@
 from nodes_pack import execution_node, ExecutionGraph
-from nodes_pack.exp_zeta_hero.market_regime_analyst import market_regime
+from exp.exp_zeta_hero.market_regime_analyst import market_regime
 
 
 @execution_node

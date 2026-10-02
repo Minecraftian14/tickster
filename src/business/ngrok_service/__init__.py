@@ -1,15 +1,16 @@
 import os
-from pyngrok import ngrok
 
 from dotenv import load_dotenv
+from pyngrok import ngrok
+
 load_dotenv()
 
 
 def connect_tunnel(
-    auth_token=None,
-    address=8000,
-    protocol="http",
-    endpoint=None
+        auth_token=None,
+        address=8000,
+        protocol="http",
+        endpoint=None
 ):
     if auth_token is None or auth_token == '':
         auth_token = os.getenv("NGROK_AUTHTOKEN")

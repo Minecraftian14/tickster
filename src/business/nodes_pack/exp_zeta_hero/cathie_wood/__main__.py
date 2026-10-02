@@ -1,5 +1,5 @@
 from nodes_pack import execution_node, ExecutionGraph
-from nodes_pack.exp_zeta_hero.cathie_wood_analyst import cathie_wood
+from exp.exp_zeta_hero.cathie_wood_analyst import cathie_wood
 
 
 @execution_node

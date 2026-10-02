@@ -1,7 +1,7 @@
 import yfinance as yf
 
 from nodes_pack.exp_zeta_hero import extract_ticker_data
-from nodes_pack.exp_zeta_hero.warren_buffett import __main__ as warren_buffett
+from exp.exp_zeta_hero.warren_buffett import __main__ as warren_buffett
 from nodes_pack.yfinance_nodes import to_dict
 from tests.business.utilities.cache_utility import tests_cache
 

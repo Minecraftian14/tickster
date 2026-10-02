@@ -2,7 +2,6 @@ from fastapi import APIRouter, HTTPException
 
 from tickster.models import HelloResponse
 
-
 router = APIRouter()
 
 

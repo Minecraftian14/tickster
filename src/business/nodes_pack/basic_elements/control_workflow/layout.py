@@ -73,11 +73,11 @@ from .structure import adjacency
 
 
 def layout_graph(
-    state: GraphState,
-    box_width: int = 140,
-    box_height: int = 30,
-    horizontal_spacing: int = 35,
-    vertical_spacing: int = 15,
+        state: GraphState,
+        box_width: int = 140,
+        box_height: int = 30,
+        horizontal_spacing: int = 35,
+        vertical_spacing: int = 15,
 ):
     outgoing, incoming = adjacency(state)
     layers = defaultdict(list)
