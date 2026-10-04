@@ -1,4 +1,4 @@
-# Generated Directories
+# Generated Directories and Files
 build/
 dist/
 dist-ssr/
@@ -9,6 +9,7 @@ out/
 target/
 .DS_Store
 *.ndz.*
+*.sqlite3
 
 # Python, UV files
 __pycache__/

@@ -18,7 +18,11 @@
     },
     "nodezator": {
       "alias":  "nz",
-      "command":  "nodezator"
+      "command":  "nodezator {tool_args}"
+    },
+    "diagram": {
+      "alias":  "dg",
+      "command":  "pyreverse -o png -p tickster --colorized {tool_args}"
     }
   }
 }

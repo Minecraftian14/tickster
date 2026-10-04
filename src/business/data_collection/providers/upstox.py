@@ -1,10 +1,10 @@
 from __future__ import annotations
 
+import gzip
+import json
 from datetime import date, datetime, timezone
 from decimal import Decimal
 from typing import Any
-import gzip
-import json
 
 import httpx
 
@@ -56,6 +56,7 @@ def _parse_timestamp(value: Any, *, default: datetime | None, issues: list[dict[
         return default
     raise ValueError(f"Unable to parse required timestamp: {value!r}")
 
+
 class UpstoxProvider:
     """Thin REST adapter around documented Upstox APIs."""
 
@@ -66,7 +67,7 @@ class UpstoxProvider:
 
     def __init__(self, access_token: str, *, timeout: float = 20.0):
         if not access_token:
-            raise ValueError("UPSTOX_ACCESS_TOKEN is required")
+            raise ValueError("upstox_connector.upstox.anaytics_token is required")
         self.access_token = access_token
         self.client = httpx.Client(
             base_url=self.base_url,
@@ -173,6 +174,7 @@ class UpstoxProvider:
         return Instrument(
             instrument_id=canonical_instrument_id(isin=isin, exchange=exchange, symbol=symbol),
             isin=isin, symbol=symbol,
+            provider_identifiers={'upstox': isin},
             exchange=exchange if exchange in {"NSE", "BSE", "OTHER"} else "OTHER",
             segment=item.get("segment"), instrument_key=item.get("instrument_key"),
             exchange_token=str(item["exchange_token"]) if item.get("exchange_token") is not None else None,
@@ -286,8 +288,6 @@ class UpstoxProvider:
             ))
         return out
 
-
-
     @staticmethod
     def parse_corporate_actions(payload: dict[str, Any], instrument_id: str, retrieved_at: datetime | None = None) -> list[CorporateAction]:
         now = retrieved_at or datetime.now(timezone.utc)
@@ -344,11 +344,13 @@ class UpstoxProvider:
                 for x in (item.get("event_details") or [])
                 if isinstance(x, dict) and x.get("name")
             }
+
             def date_value(*names: str):
                 for name in names:
                     if name in details:
                         return details[name]
                 return None
+
             out.append(CorporateAction(
                 instrument_id=instrument_id,
                 action_type=str(item.get("name") or "unknown").lower().replace(" ", "_"),

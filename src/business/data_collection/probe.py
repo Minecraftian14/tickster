@@ -14,7 +14,7 @@ def _providers():
         "yfinance": YahooFinanceProvider(),
         "nse-archives": NSEArchivesProvider(),
     }
-    token = os.environ.get("UPSTOX_ACCESS_TOKEN")
+    token = os.environ.get("upstox_connector.upstox.anaytics_token")
     if token:
         from data_collection.providers.upstox import UpstoxProvider
         providers["upstox"] = UpstoxProvider(token)

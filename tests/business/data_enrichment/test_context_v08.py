@@ -40,6 +40,8 @@ def results():
 
 def test_compact_context_selects_summaries_and_multi_resolution_series():
     out = ContextPackBuilder().build(results(), COMPACT_RESEARCH_CONTEXT, instrument_id="REL")
+    print()
+    print(out)
     assert out.profile == "compact_research"
     assert out.item_count > 0
     assert any(item.summary_type == "return_summary" for item in out.summaries) or any(item.summary_type == "return_horizons" for item in out.summaries)

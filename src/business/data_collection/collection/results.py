@@ -63,3 +63,11 @@ class CollectionResult(Generic[T]):
         self.related_records.extend(other.related_records)
         self.errors.extend(other.errors)
         self.issues.extend(other.issues)
+
+    def export_to_raw(self, export_field, *args: str):
+        return {
+            "domain": self.domain,
+            "records": export_field(self.records),
+            # "raw_payloads": export_field(self.raw_payloads),
+            "related_records": export_field(self.related_records),
+        }

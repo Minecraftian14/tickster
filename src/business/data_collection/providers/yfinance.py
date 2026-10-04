@@ -1,12 +1,13 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
-from hashlib import sha256
 from decimal import Decimal
+from hashlib import sha256
 from typing import Any
 
 import pandas as pd
 
+from data_collection.domains import Instrument
 from data_collection.domains.models import CorporateAction, NewsItem, PriceBar, Provenance
 
 
@@ -105,9 +106,11 @@ class YahooFinanceProvider:
         out: list[CorporateAction] = []
         for ts, row in actions.iterrows():
             if "Dividends" in row and pd.notna(row["Dividends"]) and float(row["Dividends"]) != 0:
-                out.append(CorporateAction(instrument_id=instrument_id, action_type="dividend", ex_date=ts.date(), amount=Decimal(str(row["Dividends"])), provenance=Provenance(source="yfinance", source_type="aggregator", source_dataset="Yahoo Finance actions", retrieved_at=now, observed_at=ts.to_pydatetime())))
+                out.append(CorporateAction(instrument_id=instrument_id, action_type="dividend", ex_date=ts.date(), amount=Decimal(str(row["Dividends"])),
+                                           provenance=Provenance(source="yfinance", source_type="aggregator", source_dataset="Yahoo Finance actions", retrieved_at=now, observed_at=ts.to_pydatetime())))
             if "Stock Splits" in row and pd.notna(row["Stock Splits"]) and float(row["Stock Splits"]) != 0:
-                out.append(CorporateAction(instrument_id=instrument_id, action_type="stock_split", ex_date=ts.date(), ratio=str(row["Stock Splits"]), provenance=Provenance(source="yfinance", source_type="aggregator", source_dataset="Yahoo Finance actions", retrieved_at=now, observed_at=ts.to_pydatetime())))
+                out.append(CorporateAction(instrument_id=instrument_id, action_type="stock_split", ex_date=ts.date(), ratio=str(row["Stock Splits"]),
+                                           provenance=Provenance(source="yfinance", source_type="aggregator", source_dataset="Yahoo Finance actions", retrieved_at=now, observed_at=ts.to_pydatetime())))
         return out
 
     def get_news_raw(self, symbol: str, *, count: int = 10, tab: str = "news") -> list[dict[str, Any]]:
@@ -132,6 +135,14 @@ class YahooFinanceProvider:
             )
             if item is not None
         ]
+
+    def extract_identifier(self, instrument: Instrument):
+        isin = instrument.isin
+        yf = _require_yfinance()
+        data = yf.Lookup(isin).all
+        if len(data) < 1: raise ValueError(f"No ticker with isin {isin} found!")
+        if len(data) > 1: print(f"WARNING: Multiple results found for isin {isin}.")
+        return data.index[0]
 
 
 def parse_yfinance_news_item(item: dict[str, Any], *, instrument_ids: list[str], retrieved_at: datetime) -> NewsItem | None:

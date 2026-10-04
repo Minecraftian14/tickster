@@ -265,10 +265,10 @@ def write_markdown(data: Any, path: str | Path, *, title: str | None = None) -> 
 def models_to_markdown(
     title: str,
     items: Iterable[Any],
-    path: str | Path,
+    path: str | Path = None,
     *,
     mode: str = "structured",
-) -> Path:
+) -> str | Path:
     """Compatibility wrapper for the existing collection export API.
 
     mode='structured' uses the generic recursive renderer.
@@ -286,7 +286,10 @@ def models_to_markdown(
     else:
         raise ValueError("mode must be 'structured' or 'raw'")
 
-    path = Path(path)
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(content, encoding="utf-8")
-    return path
+    if path is not None:
+        path = Path(path)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(content, encoding="utf-8")
+        return path
+    else:
+        return content

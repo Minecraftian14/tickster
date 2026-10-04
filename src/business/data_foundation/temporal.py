@@ -15,6 +15,8 @@ def _as_datetime(value: datetime | date | None, *, date_is_conservative: bool = 
         return None
     if isinstance(value, datetime):
         return value if value.tzinfo else value.replace(tzinfo=timezone.utc)
+    if isinstance(value, str):
+        value = datetime.fromisoformat(value)
     return _end_of_day(value) if date_is_conservative else datetime.combine(value, time.min, tzinfo=timezone.utc)
 
 

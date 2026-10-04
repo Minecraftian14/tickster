@@ -6,6 +6,7 @@ from data_collection.collection.results import CollectionResult, RawPayload
 from data_collection.domains.models import Instrument
 from data_collection.processing.instruments import deduplicate_instruments
 from data_collection.providers.upstox import UpstoxProvider
+from data_collection.providers.yfinance import YahooFinanceProvider
 
 
 class InstrumentCollector:
@@ -13,8 +14,9 @@ class InstrumentCollector:
 
     domain = "instruments"
 
-    def __init__(self, *, upstox: UpstoxProvider | None = None):
+    def __init__(self, *, upstox: UpstoxProvider = None, yfinance: YahooFinanceProvider = None):
         self.upstox = upstox
+        self.yfinance = yfinance
 
     def search_equities(self, query: str) -> CollectionResult[Instrument]:
         result: CollectionResult[Instrument] = CollectionResult(domain=self.domain)
@@ -27,7 +29,11 @@ class InstrumentCollector:
             result.raw_payloads.append(RawPayload(source="upstox", domain=self.domain, retrieved_at=now, payload=payload, request={"query": query, "exchanges": "NSE", "segments": "EQ"}))
             for item in payload.get("data", []):
                 if item.get("exchange") == "NSE" and item.get("instrument_type") == "EQ":
-                    result.records.append(UpstoxProvider.normalize_instrument(item, retrieved_at=now))
+                    instrument = UpstoxProvider.normalize_instrument(item, retrieved_at=now)
+                    if self.yfinance is not None:
+                        instrument.provider_identifiers['yfinance'] = self.yfinance.extract_identifier(instrument)
+                    # TODO: Add NSE identifier as well
+                    result.records.append(instrument)
             result.records = deduplicate_instruments(result.records)
         except Exception as exc:
             result.errors.append({"source": "upstox", "endpoint": "instrument-search", "error": str(exc)})

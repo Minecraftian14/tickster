@@ -24,6 +24,7 @@ class Instrument(BaseModel):
     isin: str | None = None
     symbol: str
     exchange: Literal["NSE", "BSE", "OTHER"] | None = None
+    provider_identifiers: dict[str, str] = {}
     segment: str | None = None
     instrument_key: str | None = None
     exchange_token: str | None = None
