@@ -19,16 +19,86 @@ from .storage import (
 )
 
 
+# Canonical identity is deliberately type-aware. A single ``instrument_id`` is
+# not sufficient for time-series observations: two PriceBars for the same
+# instrument must remain distinct records. The same principle applies to
+# periodic statements, index observations, and other repeated facts.
+_NATURAL_KEY_FIELDS: dict[str, tuple[str, ...]] = {
+    "Instrument": ("instrument_id",),
+    "PriceBar": ("instrument_id", "timeframe", "timestamp"),
+    "MarketQuote": ("instrument_id", "timestamp"),
+    "CorporateAction": (
+        "instrument_id",
+        "action_type",
+        "announcement_date",
+        "ex_date",
+        "record_date",
+        "ratio",
+        "amount",
+    ),
+    "FundamentalSnapshot": (
+        "instrument_id",
+        "period_end",
+        "period_type",
+        "statement_type",
+        "statement_name",
+        "fiscal_year",
+    ),
+    "CompanyPeer": ("instrument_id", "peer_instrument_key", "peer_isin", "peer_name"),
+    "ShareholdingSnapshot": ("instrument_id", "period_end"),
+    "CompanyDocument": ("document_id",),
+    "NewsItem": ("news_id",),
+    "MacroObservation": ("series_id", "observation_date"),
+    "CompanyEvent": ("event_id",),
+    "Filing": ("filing_id",),
+    "DocumentAsset": ("asset_id",),
+    "XBRLFact": (
+        "filing_id",
+        "instrument_id",
+        "concept",
+        "context_ref",
+        "unit_ref",
+        "period_start",
+        "period_end",
+        "instant",
+        "dimensions",
+    ),
+    "IndexSnapshot": ("index_id", "timestamp"),
+    "IndexPriceBar": ("index_id", "timestamp"),
+    "IndexValuationSnapshot": ("index_id", "observation_date"),
+    "IndexConstituent": ("index_id", "symbol", "effective_date"),
+    "SectorClassification": ("instrument_id", "classification_as_of"),
+    "InsiderTransaction": ("event_id",),
+    "LargeDeal": ("event_id",),
+    "RegulatoryItem": ("regulatory_id",),
+    "RegulatoryDocument": ("document_id",),
+    "MacroSeries": ("series_id",),
+    "MacroRelease": ("release_id",),
+}
+
+
 def _record_natural_key(record: Any) -> str:
-    for key in (
-        "instrument_id", "event_id", "filing_id", "document_id", "news_id",
-        "series_id", "index_id", "observation_id", "relationship_id",
-    ):
-        value = getattr(record, key, None)
-        if value:
-            return f"{key}:{value}"
+    record_type = record.__class__.__name__
+    if record_type in _NATURAL_KEY_FIELDS:
+        parts: list[str] = []
+        for key in _NATURAL_KEY_FIELDS[record_type]:
+            value = getattr(record, key, None)
+            if value is None and isinstance(record, BaseModel):
+                value = record.model_dump(mode="python").get(key)
+            if value is not None:
+                serialized = json.dumps(value, sort_keys=True, default=str, separators=(",", ":"))
+                parts.append(f"{key}={serialized}")
+        if parts:
+            return f"typed:{record_type}|" + "|".join(parts)
+
+    # Generic fallback for record types that have no explicit identity rule.
+    # Exclude collection-only provenance/metadata from the fallback so source
+    # retrieval details do not accidentally change canonical identity.
     payload = record.model_dump(mode="json") if isinstance(record, BaseModel) else record
-    return "payload:" + sha256(json.dumps(payload, sort_keys=True, default=str, separators=(",", ":")).encode()).hexdigest()
+    if isinstance(payload, dict):
+        payload = {key: value for key, value in payload.items() if key not in {"provenance", "metadata"}}
+    digest = sha256(json.dumps(payload, sort_keys=True, default=str, separators=(",", ":")).encode()).hexdigest()
+    return "payload:" + digest
 
 
 def canonical_record_id(record: Any, *, domain: str) -> str:

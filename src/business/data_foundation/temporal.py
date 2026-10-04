@@ -10,20 +10,50 @@ def _end_of_day(value: date) -> datetime:
     return datetime.combine(value, time.max, tzinfo=timezone.utc)
 
 
-def _as_datetime(value: datetime | date | None, *, date_is_conservative: bool = True) -> datetime | None:
+def _as_datetime(value: Any, *, date_is_conservative: bool = True) -> datetime | None:
     if value is None:
         return None
     if isinstance(value, datetime):
         return value if value.tzinfo else value.replace(tzinfo=timezone.utc)
+    if isinstance(value, date):
+        return _end_of_day(value) if date_is_conservative else datetime.combine(value, time.min, tzinfo=timezone.utc)
     if isinstance(value, str):
-        value = datetime.fromisoformat(value)
-    return _end_of_day(value) if date_is_conservative else datetime.combine(value, time.min, tzinfo=timezone.utc)
+        text = value.strip()
+        if not text:
+            return None
+        try:
+            parsed = datetime.fromisoformat(text.replace("Z", "+00:00"))
+        except ValueError:
+            try:
+                parsed_date = date.fromisoformat(text)
+            except ValueError:
+                return None
+            return _end_of_day(parsed_date) if date_is_conservative else datetime.combine(parsed_date, time.min, tzinfo=timezone.utc)
+        return parsed if parsed.tzinfo else parsed.replace(tzinfo=timezone.utc)
+    return None
 
 
-def _precision(value: datetime | date | None) -> str:
+def _precision(value: Any) -> str:
     if value is None:
         return "unknown"
-    return "instant" if isinstance(value, datetime) else "date"
+    if isinstance(value, datetime):
+        return "instant"
+    if isinstance(value, date):
+        return "date"
+    if isinstance(value, str):
+        text = value.strip()
+        if not text:
+            return "unknown"
+        try:
+            datetime.fromisoformat(text.replace("Z", "+00:00"))
+            return "instant"
+        except ValueError:
+            try:
+                date.fromisoformat(text)
+                return "date"
+            except ValueError:
+                return "unknown"
+    return "unknown"
 
 
 def temporal_envelope(record: Any, *, conservative_date_availability: bool = True) -> TemporalEnvelope:

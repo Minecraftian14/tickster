@@ -14,6 +14,14 @@ class EnrichmentProfile:
     available_capabilities: frozenset[str] = field(default_factory=frozenset)
     required_capabilities: frozenset[str] = field(default_factory=frozenset)
 
+PRELIMINARY_MARKET_PROFILE = EnrichmentProfile(
+    name="preliminary",
+    enrichers=(
+        "market.returns",
+        "market.return_horizons",
+    ),
+    description="A small set for LOW analysis.",
+)
 
 CORE_MARKET_PROFILE = EnrichmentProfile(
     name="market_core",

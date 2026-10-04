@@ -25,6 +25,11 @@ class ContextSectionSpec(BaseModel):
     include_observations: bool = False
     include_series: bool = True
     include_summaries: bool = True
+    include_source_records: bool = False
+    source_record_types: tuple[str, ...] = ()
+    source_record_type_prefixes: tuple[str, ...] = ()
+    max_source_records: int | None = None
+    tail_source_records: bool = True
 
 
 class ContextPackProfile(BaseModel):
@@ -46,19 +51,21 @@ class ContextItemRef(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    kind: Literal["observation", "series", "summary"]
-    derived_id: str
+    kind: Literal["record", "observation", "series", "summary"]
     section: str
+    record_id: str | None = None
+    derived_id: str | None = None
     included_points: int | None = None
     omitted_points: int | None = None
 
 
 class ContextPack(BaseModel):
-    """Materialized, compact analytical view over derived enrichment outputs.
+    """Materialized, bounded research context for one instrument.
 
-    This object is not an LLM representation. It contains selected derived
-    objects plus selection metadata and lineage references, leaving serialization
-    and language-model formatting to downstream packages.
+    A pack may contain both selected canonical source records and selected derived
+    enrichment outputs. It is still not an LLM representation: IDs, provenance,
+    and selection metadata remain available here for deterministic downstream
+    formatting and auditability.
     """
 
     model_config = ConfigDict(extra="allow")
@@ -68,6 +75,7 @@ class ContextPack(BaseModel):
     profile_version: str
     instrument_id: str | None = None
     as_of: datetime | None = None
+    source_records: list[Any] = Field(default_factory=list)
     observations: list[Any] = Field(default_factory=list)
     series: list[Any] = Field(default_factory=list)
     summaries: list[Any] = Field(default_factory=list)
@@ -76,7 +84,16 @@ class ContextPack(BaseModel):
 
     @property
     def item_count(self) -> int:
+        # Backward-compatible: this remains the count of derived items.
         return len(self.observations) + len(self.series) + len(self.summaries)
+
+    @property
+    def source_record_count(self) -> int:
+        return len(self.source_records)
+
+    @property
+    def total_item_count(self) -> int:
+        return self.source_record_count + self.item_count
 
     @property
     def point_count(self) -> int:

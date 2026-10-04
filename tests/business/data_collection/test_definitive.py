@@ -4,8 +4,9 @@ from datetime import datetime, timedelta
 from dotenv import load_dotenv
 
 from data_collection.providers.nse_archives import NSEArchivesProvider
-from data_enrichment import EnrichmentContext, ReturnSeriesEnricher, ContextPackBuilder, COMPACT_RESEARCH_CONTEXT, FULL_RESEARCH_CONTEXT
+from data_enrichment import EnrichmentContext, ReturnSeriesEnricher, ContextPackBuilder, FULL_RESEARCH_CONTEXT
 from data_foundation import ingest_collection_results
+from data_representation import render_context_pack
 
 load_dotenv()
 
@@ -28,7 +29,7 @@ def test_definitive():
     instruments = collector.search_equities("RELIANCE")
     for record in instruments.records:
         print("Found", record.name, "with id", record.instrument_id)
-    instruments.records = instruments.records[:1] # Retain only the top search
+    instruments.records = instruments.records[:1]  # Retain only the top search
     instrument = instruments.records[0]
 
     # Call on collectors
@@ -38,7 +39,7 @@ def test_definitive():
 
     # Make a bundle of everything
     bundle = ingest_collection_results([instruments, bars])
-    print(bundle)
+    print('bundle', bundle)
 
     # Define scope for enrichment
     context = EnrichmentContext(
@@ -50,8 +51,9 @@ def test_definitive():
     # Call on enrichers
     result = ReturnSeriesEnricher().enrich(context)
 
-    print(result)
-    # print(export_json(result))
+    print('result', result)
+    # print('export_json', export_json(result))
 
-    pack = ContextPackBuilder().build([result], FULL_RESEARCH_CONTEXT)
-    print(pack)
+    pack = ContextPackBuilder().build([result], FULL_RESEARCH_CONTEXT, source_records=bundle.canonical_records)
+    print('pack', pack)
+    print('render', render_context_pack(pack))

@@ -10,6 +10,7 @@ target/
 .DS_Store
 *.ndz.*
 *.sqlite3
+*.zip
 
 # Python, UV files
 __pycache__/

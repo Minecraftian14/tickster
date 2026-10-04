@@ -60,7 +60,7 @@ class DependencyPlanner:
         names: Iterable[str],
         *,
         available: Iterable[str] = (),
-        profile: "EnrichmentProfile" | None = None,
+        profile: "EnrichmentProfile | None = None",
     ) -> EnrichmentPlan:
         requested = tuple(names)
         input_available_caps = set(available)
