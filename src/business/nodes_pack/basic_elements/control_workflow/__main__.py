@@ -1,42 +1,16 @@
-# from tickster.workflow.state import WorkflowState
-# from .renderer import start_renderer
-# from ... import ExecutionGraph
-#
-#
-# def control_workflow(graph: ExecutionGraph) -> WorkflowState:
-#     start_renderer(graph)
-#     # width, height = 100, 100
-#     # surface = Surface((width, height)).convert()
-#     # surface.fill('white')
-#     # centerx, centery = surface.get_rect().center
-#     # draw.rect(surface, 'blue', Rect(0, 0, 50, 50))
-#     return None
-#
-#
-# # def control_workflow(graph: ExecutionGraph) -> WorkflowState:
-# #     graph = # Overwrite with a dummy instance with at least 7 nodes
-# #     callback = # Our graph implementation, which also acts as communication between execution and renderer
-# #     start_execution(graph, callback) # A dummy function which emulates graph execution
-# #     start_renderer(graph, callback) # Strictly blocking, so we cannot use return anything
-# #     return None
-#
-# main_callable = control_workflow
-# control_workflow.dismiss_exec_time_tracking = True
-
-
 from pygame import QUIT, KEYUP, K_ESCAPE
 from pygame.display import get_surface, update
 from pygame.event import get as get_events
 from pygame.font import Font
 from pygame.time import Clock
 
-from tickster.workflow.state import WorkflowState
-from .execution import start_execution
-from .layout import layout_graph
-from .renderer import Camera, render_graph
-from .structure import create_graph_state
-from ... import ExecutionGraph
-from ...execution_graph import Edge
+from nodes_pack import ExecutionGraph
+from nodes_pack.basic_elements.control_workflow.execution import start_execution
+from nodes_pack.basic_elements.control_workflow.layout import layout_graph
+from nodes_pack.basic_elements.control_workflow.renderer import Camera, render_graph
+from nodes_pack.basic_elements.control_workflow.structure import create_graph_state
+from nodes_pack.execution_graph import Edge
+from tickster.workflow.state import WorkflowState, history_item
 
 SCREEN = get_surface()
 CLOCK = Clock()
@@ -66,7 +40,7 @@ def start_renderer(graph):
 
 def create_dummy_graph():
     return ExecutionGraph(
-        nodes={name: lambda: None for name in "ABCDEFG"},
+        nodes={name: (lambda x: history_item(name, output=name)) for name in "ABCDEFG"},
         edges=[
             Edge(source="A", target="B"),
             Edge(source="A", target="C"),

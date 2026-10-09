@@ -47,10 +47,10 @@ def _read_statement_pair(frame, *candidate_rows):
     return None, None
 
 
-@make_key(cache, lambda *args, **kwargs: args[0]["asset_code"], expire=ONE_DAY)
+@make_key(cache, lambda *args, **kwargs: args[0]["ticker"], expire=ONE_DAY)
 def extract_ticker_data(ticker: dict) -> dict:
     """Collect market and accounting data for a security."""
-    overview = ticker["profile"]
+    overview = ticker["info"]
 
     # Gather the annual statements used by the derived metrics.
     try:
@@ -190,7 +190,7 @@ def extract_ticker_data(ticker: dict) -> dict:
 
     # Assemble the normalized metrics payload.
     snapshot = {
-        "ticker": ticker["asset_code"],
+        "ticker": ticker["ticker"],
         "asset_efficiency": asset_efficiency,
         "book_equity_growth": book_equity_growth,
         "equity_value_per_share": book_value_now,

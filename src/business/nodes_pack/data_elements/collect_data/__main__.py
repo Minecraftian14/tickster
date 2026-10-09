@@ -4,11 +4,9 @@ from typing import Any
 
 from dotenv import load_dotenv
 
-from data_representation import render_context_pack
-
-load_dotenv()
-
+from data_collection import collection as collectors
 from data_collection.collection.results import CollectionResult
+from data_collection.domains import Instrument
 from data_collection.providers.mospi import MOSPIProvider
 from data_collection.providers.nse_archives import NSEArchivesProvider
 from data_collection.providers.nse_filings import NSEFilingsProvider
@@ -23,8 +21,9 @@ from data_enrichment import EnrichmentProfile, OWNERSHIP_PROFILE, EVENT_PROFILE,
     RELATIVE_MARKET_PROFILE, CORE_FUNDAMENTAL_PROFILE, ProfilePlanner, default_registry, default_profile_registry, execute_plan, EnrichmentContext, ContextPackBuilder, FULL_RESEARCH_CONTEXT, EnrichmentResult
 from data_enrichment.profiles.defaults import PRELIMINARY_MARKET_PROFILE
 from data_foundation import ingest_collection_results, CanonicalBundle
-from data_collection import collection as collectors
-from data_collection.domains import Instrument
+from data_representation import render_context_pack
+
+load_dotenv()
 
 SCALE_OPTIONS = ['LOW', 'MID', 'HIG']
 SCALE_TYPE = {

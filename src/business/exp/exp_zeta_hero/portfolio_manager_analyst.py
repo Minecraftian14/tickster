@@ -2,7 +2,7 @@ from langchain_core.messages import SystemMessage, HumanMessage
 
 from exp.exp_zeta_hero.utilities import analyze_fundamentals
 from tickster.workflow.helpers import workflow_node
-from tickster.workflow.state import WorkflowState, history_item
+from tickster.workflow.state import WorkflowState, history_item, HistoryItem
 
 
 def prepare_data(metric: dict):
@@ -29,7 +29,7 @@ def call_llm(state: WorkflowState, ticker_document: str):
             "For a strong buy/sell thesis, you may include bracket fields: stop_price/take_profit."
         ),
         HumanMessage(
-            ticker_document,
+            f"{ticker_document}"
             "Output JSON:\n"
             "{\n"
             '  "decisions": {\n'
@@ -46,8 +46,22 @@ def portfolio_manager(state: WorkflowState) -> WorkflowState:
     assert "message" in state
     assert "reference" in state
 
-    references = state["reference"]
-    ticker_document = data_to_markdown(references)
+    references: list[HistoryItem] = state["reference"]['output']
+
+    ticker_analyses = [r for r in references if r['node_name'] != 'risk_manager']
+    risk_analysis = [r for r in references if r['node_name'] == 'risk_manager']
+    if len(risk_analysis) > 0: risk_analysis = risk_analysis[0]
+    else: risk_analysis = None
+
+    data = []
+    for analyses in ticker_analyses:
+        data.append(f"## Analysis by {analyses["node_name"]}")
+        for ticker, analysis in analyses["output"].items():
+            data.append(f"### {ticker}\n{analysis}")
+    if risk_analysis is not None:
+        data.append(f"## Risk Analysis\n{risk_analysis}")
+
+    ticker_document = data_to_markdown("\n\n".join(data))
     raw_result = call_llm(state, ticker_document)
 
     return {

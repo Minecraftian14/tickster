@@ -1,9 +1,11 @@
 import operator
 from collections.abc import Callable
 from datetime import datetime
+from random import random
 from typing import TypedDict, Any, Optional, Annotated, Required
 
 from langchain_core.language_models import BaseChatModel
+from langchain_core.messages import AIMessage
 from langchain_openrouter import ChatOpenRouter
 
 from gai_providers import OPENROUTER_CONFIG
@@ -36,7 +38,7 @@ class WorkflowState(TypedDict, total=False):
     llm: BaseChatModel
 
     # General instruction or just a starter message
-    # Only for use by prompt constructors
+    # Only for use by prompt constructors, otherwise use message
     prompt: str
 
     # Agent/Tool-specific message
@@ -62,6 +64,11 @@ class WorkflowState(TypedDict, total=False):
     state_name: str
 
 
+class MockRouter:
+    def invoke(self, *a, **k):
+        return AIMessage(content=f"{random()}-{a}\n{k}")
+
+
 def create_state(model: str = 'openrouter/free', api_key: str = 'default', cache_key: Any = None, mock: bool = False) -> WorkflowState:
     return {
         'llm': ChatOpenRouter(
@@ -69,6 +76,7 @@ def create_state(model: str = 'openrouter/free', api_key: str = 'default', cache
             temperature=0,
             api_key=OPENROUTER_CONFIG[api_key],
         ),
+        # 'llm': MockRouter(),
         'history': [history_item('create_state', 'LLM Initialized')],
         'cache_key': cache_key,
         'mock': mock,

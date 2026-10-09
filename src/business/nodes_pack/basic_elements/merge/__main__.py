@@ -16,27 +16,25 @@ def merge(*graphs: ExecutionGraph) -> ExecutionGraph:
 
     seen_edges: set[tuple[str, str]] = set()
 
-    start_node = f'{START_NODE}.{random()}'
-    end_node = f'{END_NODE}.{random()}'
-    merge_key = f'{start_node}.{end_node}'
+    start_node = f'{START_NODE}-{random()}'
+    end_node = f'{END_NODE}-{random()}'
+    merge_key = f'{start_node}-{end_node}'
 
     def merge_starter(state: WorkflowState) -> WorkflowState:
-        state['message'] = {merge_key: len(state['history'])}
-        return state
+        # return {'message': {merge_key: len(state['history'])}}
+        return {}
 
     def merge_ender(state: WorkflowState) -> WorkflowState:
-        length = state['message'].pop(merge_key)
-        state['reference'] = history_item('merge_node', state['history'][length:])
-        return state
+        # length = state['message'].pop(merge_key)
+        # return {'reference': history_item('merge_node', state['history'][length:])}
+        return {'reference': history_item('merge_node', state['history'][1 - len(graphs):])}
 
     merged_nodes[start_node] = merge_starter
     merged_nodes[end_node] = merge_ender
 
     def add_edge(edge: Edge) -> None:
         key = (edge.source, edge.target)
-        print("KEY", key)
         if key not in seen_edges:
-            print("ADDED")
             seen_edges.add(key)
             merged_edges.append(edge.model_copy())
 
@@ -44,11 +42,6 @@ def merge(*graphs: ExecutionGraph) -> ExecutionGraph:
         for node_id, node in graph.nodes.items():
             if node_id not in merged_nodes:
                 merged_nodes[node_id] = node
-            # if node_id in merged_nodes:
-            #     if merged_nodes[node_id] != node:
-            #         raise ValueError(f"Conflicting definitions for node {node_id!r}")
-            # else:
-            #     merged_nodes[node_id] = node
 
         for edge in graph.edges:
             add_edge(edge)
