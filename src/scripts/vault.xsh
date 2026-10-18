@@ -15,6 +15,8 @@ load_dotenv()
 
 _VAULT_FILENAME = "docs.txt"
 _FORMAT = b"VAULT1"
+# _RELATION = "../.."
+_RELATION = ""
 
 
 def _get_cipher(_key):
@@ -71,8 +73,8 @@ def print_help():
 
 def pull_vault(_path, _key):
     base = Path(_path)
-    vault = (base / "../../docs/vault").resolve()
-    envault = (base / "../../docs/envault").resolve()
+    vault = (base / _RELATION / "docs/vault").resolve()
+    envault = (base / _RELATION / "docs/envault").resolve()
     docs = envault / _VAULT_FILENAME
 
     answer = input(f"WARNING: Any changes in '{vault}' will be deleted. Continue? [y/N] ")
@@ -131,8 +133,8 @@ def pull_vault(_path, _key):
 
 def push_vault(_path, _key):
     base = Path(_path)
-    vault = (base / "../../docs/vault").resolve()
-    envault = (base / "../../docs/envault").resolve()
+    vault = (base / _RELATION / "docs/vault").resolve()
+    envault = (base / _RELATION / "docs/envault").resolve()
     docs = envault / _VAULT_FILENAME
 
     if envault.exists(): shutil.rmtree(envault)
@@ -164,8 +166,8 @@ def push_vault(_path, _key):
 
 def diff_vault(_path, _key):
     base = Path(_path)
-    vault = (base / "../../docs/vault").resolve()
-    envault = (base / "../../docs/envault").resolve()
+    vault = (base / _RELATION / "docs/vault").resolve()
+    envault = (base / _RELATION / "docs/envault").resolve()
     docs = envault / _VAULT_FILENAME
 
     if not docs.exists(): return
@@ -249,7 +251,8 @@ def diff_vault(_path, _key):
         )
 
         print()
-        print("\n".join(diff))
+        for line in diff:
+            print(line, end='')
 
     if not differences_found:
         print("Vault is unchanged.")
