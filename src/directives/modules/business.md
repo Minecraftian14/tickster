@@ -2,19 +2,18 @@
 
 ## Purpose and Tools
 
-`src/business/` is the Python source root for application and research packages.
-The root `pyproject.toml` configures it as the module root; imports use package names such as `import tickster` rather than `import business.tickster`.
+`src/business/` is the configured Python module root for application and research packages.
+Imports use package names such as `import tickster`, not `import business.tickster`.
 
 ## Placement and Boundaries
 
-Place each Python package in its own directory under `src/business/`.
-Do not place loose Python modules, documentation, scripts, or configuration directly in the source root.
-Put project command scripts in `src/scripts/` and interactive development utilities in `src/devtools/`.
+Do not place Python files directly in `src/business/`.
+Place Python source within package directories under this root.
+Do not place loose documentation, scripts, or configuration in the root.
 
-Consult the relevant family specification before changing `tickster`, experiments, Nodezator workflows, or node packs.
-Other business packages should follow the applicable package contracts and the shared [Python standards](../standards/python.md).
+See the family specs for `tickster`, experiments, Nodezator workflows, and node packs.
 
-## Acceptance
+## Ownership and Acceptance
 
-New code belongs to an appropriately named package, uses the configured import root, and respects documented dependency direction.
-Relevant tests belong under `tests/business/` in a corresponding package path.
+Package changes follow their documented contracts and the shared [Python standards](../standards/python.md).
+Place relevant tests under `tests/business/` using the corresponding package path.

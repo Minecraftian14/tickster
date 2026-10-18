@@ -26,11 +26,8 @@ Do not create additional source roots or move source artifacts outside permitted
 Root-level configuration, repository entry-point documentation, and explicitly permitted metadata may reside outside `src/`;
 build and package configuration must remain consistent with these boundaries.
 
-- **`src/directives/`** — Authoritative specifications and governance documents. Change them intentionally and follow their approval process.
-- **`src/business/`** — Python business packages and modules. Do not place loose documentation, scripts, or configuration files directly in this root. Respect human-owned business interfaces and logic.
-- **`src/devtools/`** — Development tools and repository utilities built in Kotlin using Composables UI. This directory exclusively contains tools for use during development. Loose scripts are allowed, but only in Kotlin.
-- **`src/frontend/`** — React JavaScript application using Mantine UI. Follow established structure, components, and configuration. Do not introduce another frontend framework or language without authorization.
-- **`src/scripts/`** — XONSH scripts for project-management and quality-of-life utilities. Use `src/devtools/` for interactive utilities and tools with a UI.
+Consult `src/directives/repository.md` for the source map and artifact placement rules.
+Use the applicable module specification for module-specific structure and tools.
 
 ### Protected paths
 

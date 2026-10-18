@@ -6,9 +6,10 @@ We are building an experimental investment-intelligence laboratory: a discipline
 
 Its central question is:
 
-> Which components of machine-assisted investment research, if any, produce statistically and economically significant incremental value over simpler quantitative and human baselines, once realistic costs, biases, and uncertainties are accounted for?
+> Which components of machine-assisted investment research, if any, produce statistically and economically significant incremental value over simpler quantitative and human baselines, once realistic costs, biases, and uncertainties are
+> accounted for?
 
-The product exists to answer that question with credible evidence — not to be an impressive trading bot. 
+The product exists to answer that question with credible evidence — not to be an impressive trading bot.
 Success is measured by what it can reliably tell us: what was known, what was believed, what was predicted, what was decided, what happened, and what was actually learned.
 
 ## Goals

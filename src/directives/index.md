@@ -20,34 +20,36 @@ Read the full applicable directive, not just its title or this index.
 The paths below are the directive catalog.
 An existing file is authoritative only for the scope it actually documents; report missing requirements rather than assuming an empty or incomplete file defines them.
 
-| Directive               | Scope                                                                                                                         | Consult when                                                                    |
-|-------------------------|-------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------|
-| `product.md`            | Product purpose, users, goals, non-goals, and product-level principles                                                        | A change affects intended product behavior or scope                             |
-| `architecture.md`       | System components, responsibilities, boundaries, and major data flows                                                         | Designing or changing component responsibilities or cross-module behavior       |
-| `repository.md`         | Directory map, source roots, permitted artifact locations, and repository layout                                              | Creating, moving, or locating files and modules                                 |
-| `ownership.md`          | Human-owned, AI-assisted/contract-bound, AI-regenerable, and human-reviewed areas                                             | Before editing, replacing, or regenerating implementation                       |
-| `change-policy.md`      | Approval requirements and process for changes to protected contracts or authoritative directives                              | A change needs authorization or changes a governing requirement                 |
-| `dependency-rules.md`   | Permitted dependency direction, import boundaries, and shared-contract rules                                                  | Adding dependencies or changing cross-module relationships                      |
-| `standards/python.md`   | Python-specific conventions and tooling expectations                                                                          | Editing Python packages under `src/business/` or Python tooling elsewhere       |
-| `standards/frontend.md` | React, JavaScript, and Mantine conventions                                                                                    | Editing `src/frontend/`                                                         |
-| `standards/devtools.md` | Kotlin and Composables UI conventions for development tools                                                                   | Editing `src/devtools/`                                                         |
-| `standards/scripts.md`  | XONSH conventions for project-management and quality-of-life scripts                                                          | Editing `src/scripts/`                                                          |
-| `standards/testing.md`  | Testing strategy, test placement, and expectations for evidence                                                               | Adding or changing tests, or validating a substantive change                    |
-| `validation.md`         | Repository checks, contract validators, required commands, and CI expectations                                                | Implementing or changing validation, or preparing a change for review           |
-| `modules/`              | Individual module-family specifications: purpose, ownership, structure, contracts, permitted freedom, and acceptance criteria | Creating, modifying, or regenerating a module covered by a module specification |
-| `decisions/`            | Accepted architectural decisions and their rationale, consequences, and status                                                | Evaluating a major design choice or understanding why a constraint exists       |
+| Directive               | Scope                                                                                                                  | Consult when                                                                    |
+|-------------------------|------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------|
+| `product.md`            | Product purpose, users, goals, non-goals, and product-level principles                                                 | A change affects intended product behavior or scope                             |
+| `architecture.md`       | System components, responsibilities, boundaries, and major data flows                                                  | Designing or changing component responsibilities or cross-module behavior       |
+| `repository.md`         | Directory map, source roots, permitted artifact locations, and repository layout                                       | Creating, moving, or locating files and modules                                 |
+| `ownership.md`          | Human-owned, AI-assisted/contract-bound, AI-regenerable, and human-reviewed areas                                      | Before editing, replacing, or regenerating implementation                       |
+| `change-policy.md`      | Approval requirements and process for changes to protected contracts or authoritative directives                       | A change needs authorization or changes a governing requirement                 |
+| `dependency-rules.md`   | Permitted dependency direction, import boundaries, and shared-contract rules                                           | Adding dependencies or changing cross-module relationships                      |
+| `standards/python.md`   | Python-specific conventions and tooling expectations                                                                   | Editing Python packages under `src/business/` or Python tooling elsewhere       |
+| `standards/frontend.md` | React, JavaScript, and Mantine conventions                                                                             | Editing `src/frontend/`                                                         |
+| `standards/devtools.md` | Kotlin and Composables UI conventions for development tools                                                            | Editing `src/devtools/`                                                         |
+| `standards/scripts.md`  | XONSH conventions for project-management and quality-of-life scripts                                                   | Editing `src/scripts/`                                                          |
+| `standards/testing.md`  | Testing strategy, test placement, and expectations for evidence                                                        | Adding or changing tests, or validating a substantive change                    |
+| `validation.md`         | Repository checks, contract validators, required commands, and CI expectations                                         | Implementing or changing validation, or preparing a change for review           |
+| `modules/`              | Module-family specifications; see [`modules/directives.modules.md`](modules/directives.modules.md) for their structure | Creating, modifying, or regenerating a module covered by a module specification |
+| `decisions/`            | Accepted architectural decisions and their rationale, consequences, and status                                         | Evaluating a major design choice or understanding why a constraint exists       |
 
 Add a directive when there is a distinct responsibility that needs an authoritative home. Avoid duplicating the same rule across multiple documents;
 link to the authoritative directive instead.
 
 ## Module Specification Convention
 
+Follow [`modules/directives.modules.md`](modules/directives.modules.md) when writing module specifications.
 Each convention-bound or otherwise special module family should have a dedicated specification under `modules/`.
 
 The current module specifications are:
 
-- `modules/business.md`, `modules/frontend.md`, `modules/devtools.md`, `modules/scripts.md`, and `modules/directives.md` provide short purpose and placement guides.
+- `modules/business.md`, `modules/frontend.md`, `modules/devtools.md`, `modules/scripts.md`, and `modules/directives.md` provide concise module guidance.
 - `modules/business.tickster.md`, `modules/business.exp.md`, `modules/business.nodezator_workflows.md`, and `modules/business.nodes_pack.md` define more specific business-family conventions.
+- `modules/directives.modules.md` defines the shared module-spec structure and includes illustrative examples.
 
 Add or refine module specifications as ownership and contracts become clearer.
 

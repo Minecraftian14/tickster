@@ -10,6 +10,4 @@ For a change, run the applicable command already defined by the root configurati
 - Kotlin devtools: use the configured Gradle build or test task when that area changes.
 - XONSH scripts: exercise the affected command with safe, representative arguments.
 
-For Nodezator node-pack changes, verify the required node definition layout and `main_callable` contract in [the node-pack specification](modules/business.nodes_pack.md).
-
 Report commands that were not run and why.
