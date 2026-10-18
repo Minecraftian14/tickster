@@ -1,5 +1,3 @@
-@# 2>nul & xonsh %~f0 %~dp0 %* & exit /b %errorlevel%
-
 import base64
 import difflib
 import os
@@ -10,6 +8,7 @@ import sys
 from cryptography.hazmat.primitives.ciphers.aead import AESSIV
 from pathlib import Path 
 from dotenv import load_dotenv
+from pathlib import Path
 
 load_dotenv()
 
@@ -261,7 +260,7 @@ def gen_key():
 
 
 args = sys.argv[1:]
-path = args.pop(0)
+path = Path().absolute()
 
 if len(args) == 0:
     print("Please select an operation:")
