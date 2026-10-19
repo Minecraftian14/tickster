@@ -67,6 +67,7 @@ STABLE_EXPORTS: dict[str, tuple[str, ...]] = {
         'ReturnSummaryEnricher',
         'RollingVolatilityEnricher',
         'VolatilitySummaryEnricher',
+        'TechnicalIndicatorEnricher',
         'BackendAdapter',
         'BackendComputation',
         'BackendUnavailableError',

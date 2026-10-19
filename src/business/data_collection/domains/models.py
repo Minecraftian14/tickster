@@ -182,6 +182,22 @@ class NewsItem(BaseModel):
     provenance: Provenance
 
 
+class SocialPost(BaseModel):
+    """A public social/forum post kept distinct from editorial news."""
+
+    model_config = ConfigDict(extra="allow")
+    social_id: str
+    instrument_ids: list[str] = Field(default_factory=list)
+    platform: str
+    author: str | None = None
+    title: str | None = None
+    text: str
+    url: str | None = None
+    published_at: datetime | None = None
+    metadata: dict[str, Any] = Field(default_factory=dict)
+    provenance: Provenance
+
+
 class MacroObservation(BaseModel):
     model_config = ConfigDict(extra="allow")
     series_id: str

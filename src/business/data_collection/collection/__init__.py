@@ -6,11 +6,12 @@ from data_collection.collection.ownership import OwnershipCollector, MarketEvent
 from data_collection.collection.news import NewsCollector
 from data_collection.collection.indices import IndexContextCollector
 from data_collection.collection.macro import MacroCollector
+from data_collection.collection.social import SocialCollector
 
 __all__ = [
     "CorporateActionCollector", "CompanyEventCollector", "FundamentalsCollector",
     "ShareholdingCollector", "InstrumentCollector", "MarketCollector", "NewsCollector", "MacroCollector",
-    "OwnershipCollector", "MarketEventsCollector", "IndexContextCollector", "RegulatoryCollector",
+    "OwnershipCollector", "MarketEventsCollector", "IndexContextCollector", "RegulatoryCollector", "SocialCollector",
 ]
 from .filings import FilingCollector
 from data_collection.collection.regulatory import RegulatoryCollector

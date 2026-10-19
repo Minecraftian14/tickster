@@ -21,6 +21,7 @@ from .market import (
     ReturnSeriesEnricher,
     RollingVolatilityEnricher,
     VolatilitySummaryEnricher,
+    TechnicalIndicatorEnricher,
 )
 from .backends import BackendAdapter, BackendComputation, BackendUnavailableError, BackendRegistry, FinanceToolkitBackend, OptionalBackend, PandasTABackend, QuantStatsBackend, default_backend_registry
 from .fundamental import FundamentalCashFlowEnricher, FundamentalGrowthEnricher, FundamentalProfitabilityEnricher, FundamentalSolvencyEnricher, FundamentalTTMEnricher
@@ -40,6 +41,7 @@ __all__ = [
     "DrawdownEnricher", "LiquidityEnricher", "MovingAverageEnricher", "MultiResolutionSummaryEnricher",
     "RelativePerformanceEnricher", "ReturnHorizonSummaryEnricher", "ReturnSeriesEnricher", "SimpleReturnEnricher", "ReturnSummaryEnricher",
     "RollingVolatilityEnricher", "VolatilitySummaryEnricher",
+    "TechnicalIndicatorEnricher",
     "BackendAdapter", "BackendComputation", "BackendUnavailableError", "BackendRegistry", "default_backend_registry", "FinanceToolkitBackend", "OptionalBackend", "PandasTABackend", "QuantStatsBackend",
     "CORE_MARKET_PROFILE", "CORE_FUNDAMENTAL_PROFILE", "RELATIVE_MARKET_PROFILE", "BENCHMARK_COMPARATIVE_PROFILE", "PEER_COMPARATIVE_PROFILE", "OWNERSHIP_PROFILE", "EVENT_PROFILE", "REGIME_PROFILE", "RESEARCH_CORE_PROFILE", "EnrichmentProfile", "ProfileRegistry", "ProfilePlanner", "default_profile_registry",
     "COMPACT_RESEARCH_CONTEXT", "MEDIUM_RESEARCH_CONTEXT", "FULL_RESEARCH_CONTEXT",

@@ -80,6 +80,33 @@ A corresponding Nodezator definition under `nodes_pack/`, following [business.no
 Coordinate changes to experiment nodes and node definitions.
 If Nodezator integration is explicitly deferred for a migration, record that follow-up and its reason in the migration resume context; do not report the visual workflow integration as complete.
 
+### Migration-derived implementation decisions
+
+- A migration may adapt a research system from one market or jurisdiction to another.
+  Record the target market explicitly and map every retained role to local providers, canonical record types, enrichers, and terminology.
+  Do not retain a source-specific provider, data source, or claim merely because it was present in the source project.
+  Identify every substitution and every unavailable source in the migration inventory.
+- A `ContextPackProfile` declares bounded context selection; it does not itself fetch data or run enrichers.
+  Keep collector/enricher planning outside the experiment unless their package contract explicitly supplies a supported orchestration API.
+  When an experiment receives a composite collection result, document one stable `WorkflowState.message` key and validate its shape before use.
+  Prefer consuming the supplied `ContextPack`; rebuild a narrower pack from its result and bundle only when a role has a concrete, documented need for focused evidence.
+- Convert research tools that only acquire or deterministically transform data into pre-collected canonical evidence and reusable enrichment before an agent runs.
+  Retain agent-invoked tools only when the research behavior genuinely requires the model to choose a call at run time.
+  A reusable indicator, statistic, or feature belongs in `data_enrichment`, including declared capabilities, lineage, and insufficient-data behavior, rather than in an experiment helper.
+- Preserve semantically distinct evidence types as distinct collection records.
+  For example, public social/forum posts are not editorial news even when both inform a sentiment role.
+  A new external-source collector must be provider-neutral, preserve raw payload references, retrieval and publication times, instrument association, provenance, deduplication, and explicit unavailable/rate-limited/error results.
+- Parallel graph branches must not concurrently update an unreduced `WorkflowState` field.
+  In particular, `@workflow_node` may set `reference` when it is absent, while `reference` is a single-value channel.
+  Seed a stable reference before a parallel fan-out, or make that fan-out sequential, and use reducer-backed `history` for concurrent agent outputs.
+- An experiment may provide an optional `__main__.py` that demonstrates graph wiring without becoming a runtime requirement.
+  Keep that file limited to graph assembly and demonstration values; agents and their package must remain usable without it.
+  Deferring Nodezator does not permit Nodezator-specific behavior inside the experiment package.
+- When a source requires structured output, retain the raw model response and record JSON/schema validation failures as history evidence.
+  A malformed response may be retained as unvalidated text for review, but it must not be represented as a valid structured decision.
+- When one source in a multi-source role is unavailable, make the absence visible in the affected agent's output and confidence framing.
+  Create the required TODO and resume handoffs for the missing source; do not silently treat partial-source behavior as equivalent to the source research.
+
 ### Unsupported requirements and safe pause/resume
 
 Pause the affected migration when a required capability is unsupported, its contract is unclear, a needed change crosses into a human-owned/shared contract without authorization, or a correct implementation would require prohibited global state or project infrastructure.

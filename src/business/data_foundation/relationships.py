@@ -105,7 +105,7 @@ def _record_id(record: Any) -> str | None:
     if direct:
         return str(direct)
     for key in (
-        "event_id", "asset_id", "filing_id", "document_id", "news_id", "index_id",
+        "event_id", "asset_id", "filing_id", "document_id", "news_id", "social_id", "index_id",
         "observation_id", "relationship_id", "series_id", "instrument_id",
     ):
         value = getattr(record, key, None)
@@ -114,7 +114,7 @@ def _record_id(record: Any) -> str | None:
     payload = getattr(record, "payload", None)
     if isinstance(payload, dict):
         for key in (
-            "event_id", "asset_id", "filing_id", "document_id", "news_id", "index_id",
+            "event_id", "asset_id", "filing_id", "document_id", "news_id", "social_id", "index_id",
             "observation_id", "relationship_id", "series_id", "instrument_id",
         ):
             value = payload.get(key)
@@ -228,6 +228,7 @@ def build_relationship_graph(records: Iterable[Any], *, include_data_records: bo
         "DocumentAsset": "has_document_asset",
         "XBRLFact": "has_xbrl_fact",
         "NewsItem": "has_news",
+        "SocialPost": "has_social_post",
         "SectorClassification": "has_classification",
         "IndexSnapshot": "has_index_snapshot",
         "IndexPriceBar": "has_index_price",

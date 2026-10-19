@@ -120,6 +120,7 @@ def _register_core_market(registry: EnrichmentRegistry) -> None:
         ReturnHorizonSummaryEnricher,
         ReturnSeriesEnricher,
         RollingVolatilityEnricher,
+        TechnicalIndicatorEnricher,
         VolatilitySummaryEnricher,
     )
     for enricher in (
@@ -131,6 +132,7 @@ def _register_core_market(registry: EnrichmentRegistry) -> None:
         MovingAverageEnricher(),
         LiquidityEnricher(),
         MultiResolutionSummaryEnricher(),
+        TechnicalIndicatorEnricher(),
     ):
         registry.register(enricher)
 

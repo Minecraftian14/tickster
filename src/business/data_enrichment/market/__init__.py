@@ -5,10 +5,12 @@ from .trend import MovingAverageEnricher
 from .liquidity import LiquidityEnricher
 from .relative import RelativePerformanceEnricher
 from .multiresolution import MultiResolutionSummaryEnricher
+from .technical import TechnicalIndicatorEnricher
 
 __all__ = [
     "ReturnHorizonSummaryEnricher", "ReturnSeriesEnricher",
     "RollingVolatilityEnricher", "VolatilitySummaryEnricher",
     "DrawdownEnricher", "MovingAverageEnricher", "LiquidityEnricher",
     "RelativePerformanceEnricher", "MultiResolutionSummaryEnricher",
+    "TechnicalIndicatorEnricher",
 ]

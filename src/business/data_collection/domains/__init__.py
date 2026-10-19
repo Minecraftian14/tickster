@@ -6,6 +6,7 @@ from data_collection.domains.models import (
     MarketQuote,
     MacroObservation,
     NewsItem,
+    SocialPost,
     PriceBar,
     Provenance,
     ShareholdingSnapshot,
@@ -18,7 +19,7 @@ from data_collection.domains.macro import MacroSeries, MacroRelease
 
 __all__ = [
     "RegulatoryItem", "RegulatoryDocument", "CompanyEvent", "CorporateAction", "FundamentalSnapshot", "Instrument", "MarketQuote",
-    "MacroObservation", "NewsItem", "PriceBar", "Provenance", "ShareholdingSnapshot",
+    "MacroObservation", "NewsItem", "SocialPost", "PriceBar", "Provenance", "ShareholdingSnapshot",
     "CompanyDocument", "CompanyPeer", "InsiderTransaction", "LargeDeal", "IndexConstituent", "IndexPriceBar", "IndexSnapshot", "IndexValuationSnapshot", "SectorClassification", "MacroSeries", "MacroRelease",
     "DocumentAsset", "Filing", "XBRLFact", "RegulatoryItem", "RegulatoryDocument",
 ]
