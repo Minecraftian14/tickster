@@ -1,6 +1,6 @@
 from tickster.workflow.helpers import workflow_node
 from tickster.workflow.state import WorkflowState
-from .utilities import TradeProposal, model_update, outputs, role_prompt
+from exp.exp_tacit_abyss.utilities import TradeProposal, model_update, outputs, role_prompt
 
 @workflow_node
 def trader(state: WorkflowState):

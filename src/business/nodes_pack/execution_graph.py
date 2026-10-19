@@ -18,12 +18,14 @@ def issue_name(node):
 def execution_state_name_aware(function: WorkflowNode, state_name: str) -> WorkflowNode:
     @wraps(function)
     def wrapper(state: WorkflowState):
-        state['state_name'] = state_name
-        print("STARTING", state_name)
+        state['state_name'] = wrapper.__state_name__
+        print("STARTING", wrapper.__state_name__)
         state = function(state)
-        print("ENDING", state_name)
+        print("ENDING", wrapper.__state_name__)
         if 'state_name' in state: del state['state_name']
         return state
+
+    wrapper.__state_name__ = state_name
 
     return wrapper
 

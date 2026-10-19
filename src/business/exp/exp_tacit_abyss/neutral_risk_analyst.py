@@ -1,6 +1,6 @@
 from tickster.workflow.helpers import workflow_node
 from tickster.workflow.state import WorkflowState
-from .utilities import model_update, outputs, role_prompt
+from exp.exp_tacit_abyss.utilities import model_update, outputs, role_prompt
 
 @workflow_node
 def neutral_risk_analyst(state: WorkflowState):

@@ -1,3 +1,5 @@
+from typing import Any
+
 from pygame import QUIT, KEYUP, K_ESCAPE
 from pygame.display import get_surface, update
 from pygame.event import get as get_events
@@ -55,12 +57,15 @@ def create_dummy_graph():
     )
 
 
-def control_workflow(graph: ExecutionGraph) -> WorkflowState:
+def control_workflow(
+        graph: ExecutionGraph,
+        model: str = 'openrouter/free', api_key: str = 'default', cache_key: Any = None, use_mock_router: bool = False,
+) -> WorkflowState:
     # graph = create_dummy_graph()
     state = create_graph_state(graph)
     layout_graph(state)
 
-    start_execution(graph, state)
+    start_execution(graph, state, model=model, api_key=api_key, cache_key=cache_key, use_mock_router=use_mock_router)
     start_renderer(state)
 
     return state.result

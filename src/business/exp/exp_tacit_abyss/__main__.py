@@ -2,18 +2,18 @@
 
 from langgraph.graph import END, START, StateGraph
 
-from .aggressive_risk_analyst import aggressive_risk_analyst
-from .bear_researcher import bear_researcher
-from .bull_researcher import bull_researcher
-from .conservative_risk_analyst import conservative_risk_analyst
-from .fundamentals_analyst import fundamentals_analyst
-from .market_analyst import market_analyst
-from .news_analyst import news_analyst
-from .neutral_risk_analyst import neutral_risk_analyst
-from .portfolio_manager import portfolio_manager
-from .research_manager import research_manager
-from .sentiment_analyst import sentiment_analyst
-from .trader import trader
+from exp.exp_tacit_abyss.aggressive_risk_analyst import aggressive_risk_analyst
+from exp.exp_tacit_abyss.bear_researcher import bear_researcher
+from exp.exp_tacit_abyss.bull_researcher import bull_researcher
+from exp.exp_tacit_abyss.conservative_risk_analyst import conservative_risk_analyst
+from exp.exp_tacit_abyss.fundamentals_analyst import fundamentals_analyst
+from exp.exp_tacit_abyss.market_analyst import market_analyst
+from exp.exp_tacit_abyss.neutral_risk_analyst import neutral_risk_analyst
+from exp.exp_tacit_abyss.news_analyst import news_analyst
+from exp.exp_tacit_abyss.portfolio_manager import portfolio_manager
+from exp.exp_tacit_abyss.research_manager import research_manager
+from exp.exp_tacit_abyss.sentiment_analyst import sentiment_analyst
+from exp.exp_tacit_abyss.trader import trader
 from tickster.workflow.state import WorkflowState, history_item
 
 
@@ -62,4 +62,14 @@ def build_demo_graph(*, research_rounds: int = 1, risk_rounds: int = 1):
 
 
 if __name__ == "__main__":
-    print("Supply a WorkflowState with llm and message['context'], then invoke build_demo_graph().")
+    print("Start")
+    from nodes_pack.data_elements.collect_data.__main__ import collect_data
+
+    data = collect_data("PINELABS", scale='HIG')
+    dataset = data['dataset']['PINE LABS LIMITED']
+    from tickster.workflow.state import create_state
+
+    state = create_state(model='liquid/lfm-2.5-2.6b:free')
+    state['message'] = {"context": dataset}
+    state: WorkflowState = build_demo_graph().invoke(state)
+    print(state['history'][-1]['output'])

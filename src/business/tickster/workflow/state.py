@@ -69,14 +69,14 @@ class MockRouter:
         return AIMessage(content=f"{random()}-{a}\n{k}")
 
 
-def create_state(model: str = 'openrouter/free', api_key: str = 'default', cache_key: Any = None, mock: bool = False) -> WorkflowState:
+def create_state(model: str = 'openrouter/free', api_key: str = 'default', cache_key: Any = None, mock: bool = False, use_mock_router=False) -> WorkflowState:
+    agent = MockRouter() if use_mock_router else ChatOpenRouter(
+        model=model,
+        temperature=0,
+        api_key=OPENROUTER_CONFIG[api_key],
+    )
     return {
-        'llm': ChatOpenRouter(
-            model=model,
-            temperature=0,
-            api_key=OPENROUTER_CONFIG[api_key],
-        ),
-        # 'llm': MockRouter(),
+        'llm': agent,
         'history': [history_item('create_state', 'LLM Initialized')],
         'cache_key': cache_key,
         'mock': mock,

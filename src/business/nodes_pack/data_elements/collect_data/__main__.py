@@ -2,6 +2,7 @@ import os
 from datetime import date, timedelta
 from typing import Any
 
+from diskcache import Cache
 from dotenv import load_dotenv
 
 from data_collection import collection as collectors
@@ -22,6 +23,7 @@ from data_enrichment import EnrichmentProfile, OWNERSHIP_PROFILE, EVENT_PROFILE,
 from data_enrichment.profiles.defaults import PRELIMINARY_MARKET_PROFILE
 from data_foundation import ingest_collection_results, CanonicalBundle
 from data_representation import render_context_pack
+from nodes_pack import ONE_DAY
 
 load_dotenv()
 
@@ -46,6 +48,8 @@ rss = [
     EconomicTimesRSSProvider(),
     BusinessStandardRSSProvider(),
 ]
+
+data_node_cache = Cache("temp/data_node_cache")
 
 
 def find_instruments(tickers: list[str]) -> list[Instrument]:
@@ -134,6 +138,7 @@ OUTPUT = [
 ]
 
 
+@data_node_cache.memoize(expire=ONE_DAY)
 def collect_data(
         *tickers: str,
         scale: SCALE_TYPE = SCALE_OPTIONS[0],
@@ -143,11 +148,20 @@ def collect_data(
 ) -> OUTPUT:
     instruments = find_instruments(tickers)
     start, end = date.fromisoformat(start), date.fromisoformat(end)
-    dataset = [fetch_data(instrument, scale, start, end, period) for instrument in instruments]
+
+    dataset = {}
+    display = []
+    for instrument in instruments:
+        display.append(f'{instrument.name}\n  {instrument.isin}')
+        result, bundle = fetch_data(instrument, scale, start, end, period)
+        pack = ContextPackBuilder().build([result], FULL_RESEARCH_CONTEXT, source_records=bundle.canonical_records)
+        dataset[instrument.name] = (pack, (result, bundle))
+    display = '\n'.join(display)
+
     return {
         'dataset': dataset,
         'hint': 'text',
-        'data': f'{'\n'.join([f'{i.name}\n  {i.isin}' for i in instruments])}',
+        'data': display,
     }
 
 
@@ -155,6 +169,5 @@ main_callable = collect_data
 
 if __name__ == '__main__':
     data = collect_data("PINELABS", scale='HIG')
-    result, bundle = data['dataset'][0]
-    pack = ContextPackBuilder().build([result], FULL_RESEARCH_CONTEXT, source_records=bundle.canonical_records)
+    pack, (result, bundle) = data['dataset']['PINE LABS LIMITED']
     print('render', render_context_pack(pack))

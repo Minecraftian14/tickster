@@ -86,10 +86,12 @@ If Nodezator integration is explicitly deferred for a migration, record that fol
   Record the target market explicitly and map every retained role to local providers, canonical record types, enrichers, and terminology.
   Do not retain a source-specific provider, data source, or claim merely because it was present in the source project.
   Identify every substitution and every unavailable source in the migration inventory.
-- A `ContextPackProfile` declares bounded context selection; it does not itself fetch data or run enrichers.
+- Declare the data requirements of an experiment with an `EnrichmentProfile`, identifying the reusable enrichers and derived capabilities its agents need.
+  Treat that profile as a demand/specification for the collection and enrichment system; the system that owns that orchestration infers and runs the necessary collectors and enrichers.
+  Do not substitute a `ContextPackProfile` for this purpose: it selects bounded evidence for a context pack but does not declare or execute the experiment's data requirements.
   Keep collector/enricher planning outside the experiment unless their package contract explicitly supplies a supported orchestration API.
   When an experiment receives a composite collection result, document one stable `WorkflowState.message` key and validate its shape before use.
-  Prefer consuming the supplied `ContextPack`; rebuild a narrower pack from its result and bundle only when a role has a concrete, documented need for focused evidence.
+  Prefer consuming the supplied `ContextPack`; use a `ContextPackProfile` only when the supported context-building path needs to select or bound evidence for a specific rendering purpose.
 - Convert research tools that only acquire or deterministically transform data into pre-collected canonical evidence and reusable enrichment before an agent runs.
   Retain agent-invoked tools only when the research behavior genuinely requires the model to choose a call at run time.
   A reusable indicator, statistic, or feature belongs in `data_enrichment`, including declared capabilities, lineage, and insufficient-data behavior, rather than in an experiment helper.

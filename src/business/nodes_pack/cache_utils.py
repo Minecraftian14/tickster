@@ -1,14 +1,13 @@
+from datetime import timedelta
 from functools import wraps
 
 from diskcache import Cache, ENOVAL
 from diskcache.core import args_to_key, full_name
 
-ONE_DAY = 86400
+ONE_DAY = timedelta(days=1).total_seconds()
 
 
-def make_key(cache: Cache, key_maker, name=None, typed=False, expire=None, tag=None, ignore=()):
-    cache.memoize()
-
+def make_key(cache: Cache, key_maker=lambda *a, **k: ((*a,), {**k}), name=None, typed=False, expire=None, tag=None, ignore=()):
     def decorator(func):
         base = (full_name(func),) if name is None else (name,)
 
